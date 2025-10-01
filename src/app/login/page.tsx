@@ -1,6 +1,10 @@
+"use client"
 
+import {useRouter} from 'next/navigation'
 
 export default function LoginPage() {
+  const router = useRouter()
+
   return (
       <main className="flex min-h-screen items-center justify-center bg-[#f5f5f5] p-8">
         <div className="w-full max-w-md bg-[#ffffff] rounded-2xl shadow-lg p-12">
@@ -60,7 +64,7 @@ export default function LoginPage() {
               <span>|</span>
               <button className="hover:text-[#737373]">비밀번호 찾기</button>
             </div>
-            <button className="hover:text-[#737373]">회원가입</button>
+            <button onClick={() => router.push("/signup")} className="hover:text-[#737373]">회원가입</button>
           </div>
         </div>
       </main>
