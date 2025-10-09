@@ -2,8 +2,8 @@
 
 import IdeaCard from '@/components/IdeaCard';
 import Sidebar from '@/components/Sidebar';
-import Header from '@/components/Header';
-import FloatingButton from '@/components/FloatingButton';
+import Header from '@/app/catalog/components/Header';
+import FloatingButton from '@/app/catalog/components/FloatingButton';
 
 // API 연결 전까지 사용할 임시 데이터
 const mockIdeas = [
