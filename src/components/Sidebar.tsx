@@ -38,7 +38,7 @@ export default function Sidebar() {
   const pathname = usePathname(); // ◀ 4. 현재 URL 경로를 가져옵니다 (예: '/catalog', '/mypage')
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-white">
+    <aside className="flex h-screen w-64 flex-col border-r bg-white sticky top-0">
       <div className="border-b p-6">
         <Link href="/catalog"> {/* 로고 클릭 시 목록 페이지로 이동 */}
           <h1 className="text-2xl font-bold text-teal-500">IDEANTIFY</h1>
