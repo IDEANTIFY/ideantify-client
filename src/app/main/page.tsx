@@ -85,7 +85,7 @@ export default function MainPage() {
 
   {/* AI 구체화 시작 핸들러 */}
   const handleStartConcretize = () => {
-    if (!searchValue.trim()) return // 빈 값이면 실행 안함
+    if (!searchValue.trim()) return
 
     setPageState("loading")
 
@@ -177,7 +177,7 @@ export default function MainPage() {
                                 : "bg-[#d9d9d9] text-[#737373] cursor-not-allowed"
                         } px-6 py-2 rounded-full transition-colors text-sm`}
                     >
-                      검색하기 →
+                      검사하기 →
                     </button>
                   </div>
 
