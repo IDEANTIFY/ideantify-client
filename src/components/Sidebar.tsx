@@ -51,7 +51,7 @@ export default function Sidebar() {
             <SectionTitle>AI</SectionTitle>
             <div className="flex flex-col gap-1">
               {/* ▼ 5. 각 NavItem에 href와 동적인 active 속성 부여 */}
-              <NavItem href="/inspector" icon={<Lightbulb size={18} />} text="아이디어 검사기" active={pathname === '/inspector'} />
+              <NavItem href="/main" icon={<Lightbulb size={18} />} text="아이디어 검사기" active={pathname === '/main'} />
               <NavItem href="/chatbot" icon={<Bot size={18} />} text="챗봇" active={pathname === '/chatbot'} />
             </div>
           </div>
