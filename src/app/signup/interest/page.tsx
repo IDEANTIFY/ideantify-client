@@ -28,8 +28,20 @@ export default function InterestSelection() {
   const router = useRouter()
 
   const toggleKeyword = (index: number) => {
-    setSelectedKeywords((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]))
+    setSelectedKeywords((prev) => {
+      const isSelected = prev.includes(index)
+
+      if (isSelected) {
+        return prev.filter((i) => i !== index)
+      } else {
+        if (prev.length < 4) {
+          return [...prev, index]
+        }
+      }
+      return prev
+    })
   }
+
   const handleComplete = () => {
     setShowPopup(true)
   }
@@ -43,28 +55,37 @@ export default function InterestSelection() {
     }
   }, [showPopup, router])
 
+  const selectedCount = selectedKeywords.length
+  const isLimitReached = selectedCount >= 4
+  const isButtonDisabled = selectedCount === 0
+
   return (
       <div className="flex h-screen bg-[#FAFAFA]">
-
-
         {/* Main Content */}
         <main className="flex-1 flex items-center justify-center p-8">
           <div className="bg-white rounded-3xl shadow-lg p-18 max-w-2xl w-full">
             {/* Heading */}
-            <h1 className="text-2xl font-semibold text-gray-900 text-left mb-12">나의 관심사는 무엇인가요?</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 text-left mb-12">
+              나의 관심사는 무엇인가요?
+            </h1>
 
             {/* Keywords Grid */}
             <div className="grid grid-cols-4 gap-3 mb-12">
               {keywords.map((keyword, index) => {
                 const isSelected = selectedKeywords.includes(index)
+                const isDisabled = !isSelected && isLimitReached
+
                 return (
                     <button
                         key={index}
                         onClick={() => toggleKeyword(index)}
+                        disabled={isDisabled}
                         className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
                             isSelected
                                 ? "bg-white text-[#00BFA5] border-2 border-[#00BFA5]"
                                 : "bg-white text-gray-500 border-2 border-gray-300 hover:border-gray-400"
+                        } ${
+                            isDisabled ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                     >
                       {keyword}
@@ -83,7 +104,12 @@ export default function InterestSelection() {
               </button>
               <button
                   onClick={handleComplete}
-                  className="px-6 py-2.5 rounded-lg text-sm font-medium bg-[#00BFA5] text-white hover:bg-[#00A890] transition-colors"
+                  disabled={isButtonDisabled}
+                  className={`px-6 py-2.5 rounded-lg text-sm font-medium bg-[#00BFA5] text-white transition-colors ${
+                      isButtonDisabled
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:bg-[#00A890]"
+                  }`}
               >
                 다음으로
               </button>
@@ -97,10 +123,12 @@ export default function InterestSelection() {
               <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center animate-fadeIn">
                 <div className="text-4xl mb-4">🎉</div>
                 <h2 className="text-lg font-bold mb-2">회원가입 완료!</h2>
-                <p className="text-gray-600">축하합니다 🎊 회원가입이 완료되었어요!</p>
+                <p className="text-gray-600">
+                  축하합니다 🎊 회원가입이 완료되었어요!
+                </p>
               </div>
             </div>
         )}
       </div>
-      )
+  )
 }
