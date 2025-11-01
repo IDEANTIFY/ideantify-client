@@ -1,5 +1,6 @@
 // src/app/mypage/page.tsx
 
+import Link from 'next/link';
 import Sidebar from '@/components/Sidebar';
 import IdeaCard from '@/components/IdeaCard';
 import UserProfile from './components/UserProfile'; // 방금 만든 UserProfile을 가져옵니다.
@@ -52,28 +53,27 @@ export default function MyPage() {
       <main className="flex-1 overflow-y-auto p-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
           
-          {/* 1. 사용자 프로필 컴포넌트 */}
           <UserProfile {...userProfileData} />
 
-          {/* 2. 내 프로젝트 섹션 */}
           <div className="w-full rounded-lg border bg-white p-8 shadow-sm">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">내 프로젝트</h2>
-            <button className="rounded-lg bg-teal-500 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-600">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">내 프로젝트</h2>
+              <button className="rounded-lg bg-teal-500 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-600">
                 업로드
-            </button>
+              </button>
             </div>
             
-            {/* 아이디어 카드 그리드 (catalog 페이지와 동일한 구조) */}
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {myProjects.map((idea) => (
-                <IdeaCard
-                  key={idea.id}
-                  imageUrl={idea.imageUrl}
-                  title={idea.title}
-                  description={idea.description}
-                  tags={idea.tags}
-                />
+                // ◀ 2. <Link> 태그로 <IdeaCard>를 감쌉니다.
+                <Link href={`/projectview/${idea.id}`} key={idea.id}>
+                  <IdeaCard
+                    imageUrl={idea.imageUrl}
+                    title={idea.title}
+                    description={idea.description}
+                    tags={idea.tags}
+                  />
+                </Link>
               ))}
             </div>
           </div>

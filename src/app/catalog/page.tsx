@@ -1,5 +1,6 @@
 // src/app/catalog/page.tsx
 
+import Link from 'next/link';
 import IdeaCard from '@/components/IdeaCard';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/app/catalog/components/Header';
@@ -58,20 +59,20 @@ export default function CatalogPage() {
       <Sidebar />
 
       <main className="relative flex-1 overflow-y-auto p-8">
-        {/* 콘텐츠가 너무 넓어지지 않도록 최대 너비를 설정하고 중앙 정렬합니다. */}
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
           <Header />
 
-          {/* 카드 사이의 간격을 gap-6에서 gap-8로 늘립니다. */}
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {mockIdeas.map((idea) => (
-              <IdeaCard
-                key={idea.id}
-                imageUrl={idea.imageUrl}
-                title={idea.title}
-                description={idea.description}
-                tags={idea.tags}
-              />
+              // ◀ 2. <Link> 태그로 <IdeaCard>를 감쌉니다.
+              <Link href={`/projectview/${idea.id}`} key={idea.id}>
+                <IdeaCard
+                  imageUrl={idea.imageUrl}
+                  title={idea.title}
+                  description={idea.description}
+                  tags={idea.tags}
+                />
+              </Link>
             ))}
           </div>
         </div>
