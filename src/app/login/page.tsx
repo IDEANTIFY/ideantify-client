@@ -1,25 +1,41 @@
 "use client"
 
-import {useRouter} from 'next/navigation'
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const router = useRouter()
 
+  // 백엔드 API의 기본 URL 정의 -> 실제 배포 시에는 process.env.NEXT_PUBLIC_API_URL 등 ㄱㄱ
+  const API_BASE_URL = "http://localhost:8080"
+
+  const handleKakaoLogin = () => {
+    window.location.href = `${API_BASE_URL}/api/auth/oauth/kakao?redirect_to=/main`
+  }
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${API_BASE_URL}/api/auth/oauth/google?redirect_to=/main`
+  }
+
   return (
       <main className="flex min-h-screen items-center justify-center bg-[#f5f5f5] p-8">
         <div className="w-full max-w-md bg-[#ffffff] rounded-2xl shadow-lg p-12">
-
           {/* Welcome Header */}
           <div className="text-center mb-12">
-            <p className="text-[#949ba7] text-sm font-medium mb-2 tracking-wide">WELCOME TO</p>
-            <h2 className="text-[#00bba7] text-4xl font-bold tracking-wide">IDEANTIFY</h2>
+            <p className="text-[#949ba7] text-sm font-medium mb-2 tracking-wide">
+              WELCOME TO
+            </p>
+            <h2 className="text-[#00bba7] text-4xl font-bold tracking-wide">
+              IDEANTIFY
+            </h2>
           </div>
 
           {/* Login Buttons */}
           <div className="space-y-3 mb-12">
-
             {/* Kakao Login */}
-            <button className="w-full bg-[#fde047] hover:bg-[#fde047]/90 text-[#404040] font-medium py-6 rounded-lg flex items-center justify-center gap-3">
+            <button
+                onClick={handleKakaoLogin}
+                className="w-full bg-[#fde047] hover:bg-[#fde047]/90 text-[#404040] font-medium py-6 rounded-lg flex items-center justify-center gap-3"
+            >
               <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -32,7 +48,10 @@ export default function LoginPage() {
             </button>
 
             {/* Google Login */}
-            <button className="w-full bg-[#ffffff] hover:bg-[#fafafa] text-[#404040] font-medium py-6 rounded-lg border border-gray-300 flex items-center justify-center gap-3 shadow-sm">
+            <button
+                onClick={handleGoogleLogin}
+                className="w-full bg-[#ffffff] hover:bg-[#fafafa] text-[#404040] font-medium py-6 rounded-lg border border-gray-300 flex items-center justify-center gap-3 shadow-sm"
+            >
               <div className="w-6 h-6 flex items-center justify-center">
                 <svg viewBox="0 0 24 24" className="w-5 h-5">
                   <path
@@ -64,7 +83,12 @@ export default function LoginPage() {
               <span>|</span>
               <button className="hover:text-[#737373]">비밀번호 찾기</button>
             </div>
-            <button onClick={() => router.push("/signup")} className="hover:text-[#737373]">회원가입</button>
+            <button
+                onClick={() => router.push("/signup")}
+                className="hover:text-[#737373]"
+            >
+              회원가입
+            </button>
           </div>
         </div>
       </main>

@@ -38,7 +38,7 @@ const EditableField = ({
       <textarea
           value={value}
           onChange={onChange}
-          className="w-full rounded-lg border border-gray-300 p-4 pr-10 shadow-sm focus:border-[#00bba7] focus:outline-none focus:ring-1 focus:ring-[#00bba7] resize-none"
+          className="w-full rounded-lg border border-gray-300 p-4 pr-10 shadow-sm focus:border-[#00bba7] focus:outline-none focus:ring-1 focus:ring-[#00bba7] resize-none text-gray-700"
           rows={rows}
       />
         <Pencil className="absolute top-4 right-4 h-5 w-5 text-gray-400" />
@@ -220,7 +220,7 @@ export default function MainPage() {
                   <div className="relative mb-4 rounded-lg border border-[#00bba7] bg-[#f0fdfa] p-4 text-sm font-medium text-[#0d9488]">
                     {searchValue}
                     <button
-                        onClick={() => setPageState("idle")} // ◀ (X 버튼 누르면 초기 상태로)
+                        onClick={() => setPageState("idle")}
                         className="absolute top-3 right-3 text-[#00bba7] opacity-70 hover:opacity-100"
                     >
                       <X size={18} />

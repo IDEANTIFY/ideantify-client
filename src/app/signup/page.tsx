@@ -5,27 +5,53 @@ import { useRouter } from "next/navigation"
 export default function SignupPage() {
   const router = useRouter()
 
+  // 백엔드 API 기본 URL
+  const API_BASE_URL = "http://localhost:8080"
+
+  const handleKakaoSignup = () => {
+    window.location.href = `${API_BASE_URL}/api/auth/oauth/kakao?redirect_to=/signup`
+  }
+
+  const handleGoogleSignup = () => {
+    window.location.href = `${API_BASE_URL}/api/auth/oauth/google?redirect_to=/signup`
+  }
+
   return (
       <main className="flex min-h-screen items-center justify-center bg-[#f5f5f5] p-8">
         <div className="w-full max-w-md bg-[#ffffff] rounded-2xl shadow-lg p-12">
           {/* Welcome Header */}
           <div className="text-center mb-12">
-            <p className="text-[#949ba7] text-sm font-medium mb-2 tracking-wide">WELCOME TO</p>
-            <h2 className="text-[#00bba7] text-4xl font-bold tracking-wide">IDEANTIFY</h2>
+            <p className="text-[#949ba7] text-sm font-medium mb-2 tracking-wide">
+              WELCOME TO
+            </p>
+            <h2 className="text-[#00bba7] text-4xl font-bold tracking-wide">
+              IDEANTIFY
+            </h2>
           </div>
 
           {/* Signup Buttons */}
           <div className="space-y-3 mb-12">
             {/* Kakao Signup */}
-            <button className="w-full bg-[#fde047] hover:bg-[#fde047]/90 text-[#404040] font-medium py-6 rounded-lg flex items-center justify-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+            <button
+                onClick={handleKakaoSignup}
+                className="w-full bg-[#fde047] hover:bg-[#fde047]/90 text-[#404040] font-medium py-6 rounded-lg flex items-center justify-center gap-3"
+            >
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="w-6 h-6"
+                  fill="currentColor"
+              >
                 <path d="M12 3C6.48 3 2 6.97 2 11.5c0 2.42 1.3 4.59 3.37 6.06-.12.45-.74 2.74-.77 2.91 0 0-.02.1.05.14.07.04.13.01.13.01.17-.02 2.83-1.9 3.27-2.19 1.14.32 2.36.5 3.63.5 5.52 0 10-3.97 10-8.5S17.52 3 12 3z" />
               </svg>
               <span>카카오로 회원가입하기</span>
             </button>
 
             {/* Google Signup */}
-            <button className="w-full bg-[#ffffff] hover:bg-[#fafafa] text-[#404040] font-medium py-6 rounded-lg border border-gray-300 flex items-center justify-center gap-3 shadow-sm">
+            <button
+                onClick={handleGoogleSignup}
+                className="w-full bg-[#ffffff] hover:bg-[#fafafa] text-[#40404NFOA-40] font-medium py-6 rounded-lg border border-gray-300 flex items-center justify-center gap-3 shadow-sm"
+            >
               <div className="w-6 h-6 flex items-center justify-center">
                 <svg viewBox="0 0 24 24" className="w-5 h-5">
                   <path
