@@ -2,7 +2,9 @@ import { ReactNode } from 'react'
 
 import type { Metadata } from 'next'
 
-import '@/globals.css'
+import ClientLayout from '@/app/client-layout'
+import { Toaster } from '@/components/ui/sonner'
+import '@/styles/globals.css'
 
 interface Props {
   children: ReactNode
@@ -16,7 +18,10 @@ export const metadata: Metadata = {
 export default function Layout({ children }: Props) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <ClientLayout>{children}</ClientLayout>
+        <Toaster />
+      </body>
     </html>
   )
 }
