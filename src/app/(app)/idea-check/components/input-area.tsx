@@ -53,7 +53,7 @@ export default function InputArea({ defaultQuery, defaultMetadata }: Props) {
           <>
             <div className="relative">
               <Textarea
-                className="h-42 resize-none rounded-3xl p-6 pb-14 text-base focus-visible:border-teal-300 focus-visible:ring-1 focus-visible:ring-teal-300"
+                className="h-42 resize-none rounded-3xl bg-white p-6 pb-14 text-base focus-visible:border-teal-300 focus-visible:ring-1 focus-visible:ring-teal-300"
                 placeholder={`내가 생각한 서비스, 혹시 이미 있을까? 아이디어를 입력해 보세요.
 ex) 팀플 일정 맞춰주는 앱`}
                 value={query}
