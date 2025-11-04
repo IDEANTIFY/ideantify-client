@@ -1,9 +1,13 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 
 import { ArrowRight } from 'lucide-react'
+import { overlay } from 'overlay-kit'
 
 import { Button } from '@/components/ui/button'
+import ProjectDetailModal from '@/modals/project/project-detail.modal'
 
 export default function IdeaList() {
   return (
@@ -20,6 +24,11 @@ export default function IdeaList() {
           <div
             key={index}
             className="max-w-[300px] cursor-pointer overflow-clip rounded-xl border bg-white hover:bg-neutral-50"
+            onClick={() =>
+              overlay.open(({ isOpen, close }) => (
+                <ProjectDetailModal isOpen={isOpen} close={close} />
+              ))
+            }
           >
             <Image
               src="https://designcompass.org/wp-content/uploads/2023/12/gemini-01.png"

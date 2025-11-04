@@ -5,7 +5,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { Plus, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
+import { overlay } from 'overlay-kit'
 
 import { Input } from '@/components/ui/input'
 import {
@@ -15,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import ProjectDetailModal from '@/modals/project/project-detail.modal'
 
 export default function Page() {
   const [category, setCategory] = useState('all')
@@ -62,10 +64,14 @@ export default function Page() {
 
       <div className="grid grid-cols-3 gap-6">
         {Array.from({ length: 9 }).map((_, index) => (
-          <Link
+          <div
             key={index}
-            href={`/ideas/${index + 1}`}
             className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
+            onClick={() =>
+              overlay.open(({ isOpen, close }) => (
+                <ProjectDetailModal isOpen={isOpen} close={close} />
+              ))
+            }
           >
             <Image
               src="https://designcompass.org/wp-content/uploads/2023/12/gemini-01.png"
@@ -86,7 +92,7 @@ export default function Page() {
                 AI
               </span>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
 
