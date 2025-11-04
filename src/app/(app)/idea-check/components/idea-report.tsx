@@ -4,10 +4,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { ChartColumnIncreasing, Download, SendHorizonal } from 'lucide-react'
+import { overlay } from 'overlay-kit'
 
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
+import ReportProjectDetailModal from '@/modals/project/report-project-detail.modal'
 
 interface Props {
   reportId: string
@@ -104,6 +106,11 @@ export default function IdeaReport({ reportId }: Props) {
           <div
             key={index}
             className="flex cursor-pointer flex-col gap-4 rounded-lg border bg-white p-5 hover:bg-neutral-50"
+            onClick={() =>
+              overlay.open(({ isOpen, close }) => (
+                <ReportProjectDetailModal isOpen={isOpen} close={close} />
+              ))
+            }
           >
             <div className="flex justify-between">
               <div className="flex flex-col">
