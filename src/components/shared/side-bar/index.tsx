@@ -10,6 +10,7 @@ import {
   LightBulbIcon,
   PencilSquareIcon,
 } from '@heroicons/react/24/outline'
+import { LogInIcon } from 'lucide-react'
 import { overlay } from 'overlay-kit'
 
 import SidebarItem from '@/components/shared/side-bar/item'
@@ -17,8 +18,12 @@ import SidebarItemGroup from '@/components/shared/side-bar/item-group'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import LoginModal from '@/modals/auth/login.modal'
+import { useAuthStore, useUserStore } from '@/stores'
 
 export default function Sidebar() {
+  const { clearToken } = useAuthStore()
+  const { user, clearUser } = useUserStore()
+
   return (
     <div className="fixed flex h-dvh w-64 flex-col items-start justify-between border-0 border-r border-solid border-neutral-100 bg-white">
       <div className="flex w-full shrink-0 flex-col gap-6">
@@ -40,11 +45,13 @@ export default function Sidebar() {
               icon={LightBulbIcon}
               title="아이디어 검사기"
             />
-            <SidebarItem
-              href="/chat-bot"
-              icon={ChatBubbleLeftIcon}
-              title="챗봇"
-            />
+            {user && (
+              <SidebarItem
+                href="/chat-bot"
+                icon={ChatBubbleLeftIcon}
+                title="챗봇"
+              />
+            )}
           </SidebarItemGroup>
           <SidebarItemGroup label="아이디어">
             <SidebarItem
@@ -52,42 +59,61 @@ export default function Sidebar() {
               icon={DocumentTextIcon}
               title="아이디어 모아보기"
             />
-            <SidebarItem
-              href="/trending"
-              icon={FireIcon}
-              title="요즘 뜨는 이슈"
-            />
+            {user && (
+              <SidebarItem
+                href="/trending"
+                icon={FireIcon}
+                title="요즘 뜨는 이슈"
+              />
+            )}
           </SidebarItemGroup>
-          <SidebarItemGroup label="내 정보 관리">
-            <SidebarItem
-              href="/my-page"
-              icon={PencilSquareIcon}
-              title="마이페이지"
-            />
-          </SidebarItemGroup>
+          {user && (
+            <SidebarItemGroup label="내 정보 관리">
+              <SidebarItem
+                href="/my-page"
+                icon={PencilSquareIcon}
+                title="마이페이지"
+              />
+            </SidebarItemGroup>
+          )}
         </div>
       </div>
 
       <div className="flex w-full shrink-0 items-center border-0 border-t border-solid border-neutral-100 p-6">
-        <div className="relative flex min-h-px min-w-px shrink-0 grow basis-0 items-center justify-between">
-          <div className="flex shrink-0 items-center gap-2">
-            <Avatar>
-              <AvatarFallback>김</AvatarFallback>
-            </Avatar>
-            <p className="text-base font-medium">김이름</p>
+        {user ? (
+          <div className="flex w-full items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Avatar>
+                <AvatarFallback>{user.nickname.at(0)}</AvatarFallback>
+              </Avatar>
+              <p className="text-base font-medium">{user.nickname}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                clearToken()
+                clearUser()
+              }}
+            >
+              <ArrowRightStartOnRectangleIcon className="size-5" />
+            </Button>
           </div>
+        ) : (
           <Button
+            size="lg"
+            className="w-full justify-between"
             variant="ghost"
-            size="icon"
             onClick={() =>
               overlay.open(({ isOpen, close }) => (
-                <LoginModal service="업로드" isOpen={isOpen} close={close} />
+                <LoginModal service="Ideantify" isOpen={isOpen} close={close} />
               ))
             }
           >
-            <ArrowRightStartOnRectangleIcon className="size-5" />
+            로그인
+            <LogInIcon />
           </Button>
-        </div>
+        )}
       </div>
     </div>
   )

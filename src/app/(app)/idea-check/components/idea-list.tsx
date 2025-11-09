@@ -1,15 +1,27 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import Image from 'next/image'
 import Link from 'next/link'
 
 import { ArrowRight } from 'lucide-react'
 import { overlay } from 'overlay-kit'
 
+import { ProjectListResponse, projectApi } from '@/api'
 import { Button } from '@/components/ui/button'
 import ProjectDetailModal from '@/modals/project/project-detail.modal'
 
 export default function IdeaList() {
+  const [projects, setProjects] = useState<ProjectListResponse[]>([])
+
+  useEffect(() => {
+    ;(async () => {
+      const response = await projectApi.getProjectList({ own: true })
+      setProjects(response)
+    })()
+  }, [])
+
   return (
     <section className="flex w-full max-w-5xl flex-col items-center gap-8">
       <div className="flex flex-col items-center">
@@ -20,33 +32,47 @@ export default function IdeaList() {
       </div>
 
       <div className="flex flex-wrap justify-center gap-6">
-        {Array.from({ length: 6 }).map((_, index) => (
+        {projects.map((project) => (
           <div
-            key={index}
-            className="max-w-[300px] cursor-pointer overflow-clip rounded-xl border bg-white hover:bg-neutral-50"
-            onClick={() =>
+            key={project.id}
+            className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
+            onClick={async () => {
+              const _project = await projectApi.getProject(project.id)
+
               overlay.open(({ isOpen, close }) => (
-                <ProjectDetailModal isOpen={isOpen} close={close} />
+                <ProjectDetailModal
+                  isOpen={isOpen}
+                  close={close}
+                  project={_project}
+                />
               ))
-            }
+            }}
           >
             <Image
-              src="https://designcompass.org/wp-content/uploads/2023/12/gemini-01.png"
-              alt="Idea Image"
+              src={project.image}
+              alt={project.subject}
               width={300}
               height={150}
-              className="h-[150px] w-[300px] object-cover"
+              className="h-[150px] w-full object-cover"
             />
-            <section className="flex flex-col gap-2 p-4">
-              <span className="font-semibold">구글 제미나이</span>
-              <span className="text-xs text-neutral-600">
-                텍스트, 이미지 등 다양한 형태의 데이터를 동시에 이해하고 처리할
-                수 있는 AI 모델로 구글의 차세대 AI 플랫폼입니다.
+            <div className="flex flex-col gap-2 p-3">
+              <span className="text-sm font-semibold text-neutral-700">
+                {project.subject}
               </span>
-              <span className="w-fit rounded-full border bg-neutral-50 px-2 py-0.5 text-xs">
-                AI
-              </span>
-            </section>
+              <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
+                {project.description}
+              </p>
+              <div className="flex gap-1.5">
+                {project.keywords?.map((keyword) => (
+                  <span
+                    key={keyword}
+                    className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700"
+                  >
+                    {keyword}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         ))}
       </div>

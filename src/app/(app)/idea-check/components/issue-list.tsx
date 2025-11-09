@@ -1,11 +1,24 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+
 import Image from 'next/image'
 import Link from 'next/link'
 
 import { ArrowRight } from 'lucide-react'
 
+import { TrendingIssueResponse, userApi } from '@/api'
 import { Button } from '@/components/ui/button'
 
 export default function IssueList() {
+  const [issues, setIssues] = useState<TrendingIssueResponse[]>([])
+
+  useEffect(() => {
+    ;(async () => {
+      setIssues(await userApi.getTrendingIssues())
+    })()
+  }, [])
+
   return (
     <section className="flex w-full max-w-5xl flex-col items-center gap-8">
       <div className="flex flex-col items-center">
@@ -15,63 +28,26 @@ export default function IssueList() {
         </h3>
       </div>
 
-      <h4 className="text-lg font-semibold text-gray-700">
-        최신 공모전 수상작
-      </h4>
-
       <div className="grid grid-cols-2 gap-8">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <div
-            key={index}
-            className="flex w-full cursor-pointer gap-6 rounded-lg border bg-white p-4 hover:bg-neutral-50"
+        {issues.slice(0, 2).map((issue) => (
+          <Link
+            key={issue.link}
+            href={issue.link}
+            target="_blank"
+            className="flex cursor-pointer flex-col gap-2 overflow-hidden rounded-md border bg-white hover:bg-neutral-50"
           >
             <Image
-              src="https://designcompass.org/wp-content/uploads/2023/12/gemini-01.png"
-              alt="Idea Image"
-              width={100}
-              height={100}
-              className="aspect-square h-[100px] w-[100px] rounded-md object-cover"
+              src={issue.image || 'https://placehold.co/300x150'}
+              alt={issue.title}
+              width={300}
+              height={150}
+              className="h-[150px] w-full object-cover"
             />
-            <section className="flex flex-col gap-2">
-              <span className="font-semibold">구글 제미나이</span>
-              <span className="text-xs text-neutral-600">
-                텍스트, 이미지 등 다양한 형태의 데이터를 동시에 이해하고 처리할
-                수 있는 AI 모델로 구글의 차세대 AI 플랫폼입니다.
-              </span>
-              <span className="w-fit rounded-full border bg-neutral-50 px-2 py-0.5 text-xs">
-                AI
-              </span>
-            </section>
-          </div>
-        ))}
-      </div>
-
-      <h4 className="text-lg font-semibold text-gray-700">최신 트렌드 뉴스</h4>
-
-      <div className="grid grid-cols-2 gap-8">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <div
-            key={index}
-            className="flex w-full cursor-pointer gap-6 rounded-lg border bg-white p-4 hover:bg-neutral-50"
-          >
-            <Image
-              src="https://designcompass.org/wp-content/uploads/2023/12/gemini-01.png"
-              alt="Idea Image"
-              width={100}
-              height={100}
-              className="aspect-square h-[100px] w-[100px] rounded-md object-cover"
-            />
-            <section className="flex flex-col gap-2">
-              <span className="font-semibold">구글 제미나이</span>
-              <span className="text-xs text-neutral-600">
-                텍스트, 이미지 등 다양한 형태의 데이터를 동시에 이해하고 처리할
-                수 있는 AI 모델로 구글의 차세대 AI 플랫폼입니다.
-              </span>
-              <span className="w-fit rounded-full border bg-neutral-50 px-2 py-0.5 text-xs">
-                AI
-              </span>
-            </section>
-          </div>
+            <div className="flex flex-col gap-2 p-5 pt-3">
+              <span className="text-sm text-neutral-500">{issue.source}</span>
+              <span className="font-medium">{issue.title}</span>
+            </div>
+          </Link>
         ))}
       </div>
 

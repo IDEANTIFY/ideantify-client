@@ -4,9 +4,12 @@ import { useState } from 'react'
 
 import { RedirectType, redirect, usePathname } from 'next/navigation'
 
+import { Client } from '@stomp/stompjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, ChevronDown, XIcon } from 'lucide-react'
+import SockJS from 'sockjs-client'
 
+import { ideaReportApi } from '@/api'
 import Title from '@/app/(app)/idea-check/components/title'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,19 +17,19 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/libs/utils'
 
 interface Metadata {
-  key_points: string
+  summary: string
   purpose: string
-  distinctiveness: string
-  core_technology: string
-  target_audience: string
+  differentiation: string
+  technology: string
+  target: string
 }
 
 const MetadataLabel: Record<keyof Metadata, string> = {
-  key_points: '주요 내용',
+  summary: '주요 내용',
   purpose: '목적',
-  distinctiveness: '차별점',
-  core_technology: '핵심 기술',
-  target_audience: '사용 대상',
+  differentiation: '차별점',
+  technology: '핵심 기술',
+  target: '사용 대상',
 }
 
 interface Props {
@@ -62,18 +65,32 @@ ex) 팀플 일정 맞춰주는 앱`}
               <Button
                 disabled={!query}
                 className="absolute right-4 bottom-4 bg-teal-400 text-white hover:bg-teal-400/90 disabled:bg-neutral-500"
-                onClick={() => {
-                  setMetadata({
-                    key_points: '팀플 일정 맞춰주는 앱',
-                    purpose:
-                      '팀원들의 일정 조율을 간편하게 하여 효율적인 팀 프로젝트 진행을 돕기 위해',
-                    distinctiveness:
-                      '자동 일정 분석 및 최적 회의 시간 추천 기능을 통해 기존 캘린더 앱과 차별화',
-                    core_technology:
-                      '캘린더 API 연동, 머신러닝 기반 일정 분석 알고리즘',
-                    target_audience:
-                      '대학생 및 직장인 등 팀 프로젝트를 자주 하는 사용자',
+                onClick={async () => {
+                  const { websocket_topic } =
+                    await ideaReportApi.createIdeaReportMetadata({
+                      query: query!,
+                    })
+
+                  const client = new Client({
+                    webSocketFactory: () =>
+                      new SockJS(
+                        process.env.NEXT_PUBLIC_BASE_API_URL + '/ws/chat'
+                      ),
+                    reconnectDelay: 1000,
+                    debug: (str) => console.log(str),
+                    onWebSocketError: (error) => {
+                      console.error('WebSocket 에러:', error)
+                    },
                   })
+
+                  client.onConnect = () => {
+                    client.subscribe(websocket_topic, (message) => {
+                      setMetadata(JSON.parse(message.body) as Metadata)
+                      client.forceDisconnect()
+                    })
+                  }
+
+                  client.activate()
                 }}
               >
                 검사하기
@@ -154,9 +171,37 @@ ex) 팀플 일정 맞춰주는 앱`}
               <Button
                 size="lg"
                 className="bg-teal-400 text-white hover:bg-teal-400/90"
-                onClick={() =>
-                  redirect('/idea-check/temp-id', RedirectType.push)
-                }
+                onClick={async () => {
+                  if (!metadata) return
+
+                  const { websocket_topic } =
+                    await ideaReportApi.createIdeaReport({
+                      query: query!,
+                      ...metadata,
+                    })
+
+                  const client = new Client({
+                    webSocketFactory: () =>
+                      new SockJS(
+                        process.env.NEXT_PUBLIC_BASE_API_URL + '/ws/chat'
+                      ),
+                    reconnectDelay: 1000,
+                    debug: (str) => console.log(str),
+                    onWebSocketError: (error) => {
+                      console.error('WebSocket 에러:', error)
+                    },
+                  })
+
+                  client.onConnect = () => {
+                    client.subscribe(websocket_topic, (message) => {
+                      const { id } = JSON.parse(message.body) as { id: string }
+                      client.forceDisconnect()
+                      redirect(`/idea-check/${id}`, RedirectType.push)
+                    })
+                  }
+
+                  client.activate()
+                }}
               >
                 검사하기
                 <ArrowRight />

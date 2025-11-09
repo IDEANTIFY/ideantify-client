@@ -1,33 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { redirect } from 'next/navigation'
-
+import { KeywordResponse, keywordApi } from '@/api'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/libs/utils'
 
-const KEYWORD = [
-  '스타트업 / 창업',
-  '교육 / 학습',
-  '헬스케어',
-  '문화 / 예술',
-  '패션 / 뷰티',
-  '라이프스타일',
-  '여행 / 관광',
-  '제조 / 하드웨어',
-  '스포츠 / 피트니스',
-  '모빌리티',
-  '금융 / 핀테크',
-  '유통 / 커머스',
-  'AI / 빅데이터',
-  '부동산 / 주거',
-  '환경 / 사회문제',
-  '정책 / 공공서비스',
-]
-
 export default function Page() {
+  const [keywords, setKeywords] = useState<KeywordResponse[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([])
+
+  useEffect(() => {
+    ;(async () => {
+      setKeywords(await keywordApi.getAllKeywords())
+    })()
+  }, [])
 
   return (
     <section className="flex flex-col gap-6 rounded-4xl bg-white p-16 shadow-2xl">
@@ -41,24 +28,28 @@ export default function Page() {
       </div>
 
       <div className="flex max-w-sm flex-wrap gap-2">
-        {KEYWORD.map((keyword) => (
+        {keywords.map((keyword) => (
           <Button
-            key={keyword}
+            key={keyword.id}
             variant="outline"
             className={cn(
               'font-medium',
-              selectedKeywords.includes(keyword) &&
+              selectedKeywords.includes(keyword.id) &&
                 'border-ideantify hover:border-ideantify text-ideantify hover:text-ideantify hover:bg-ideantify/10'
             )}
             onClick={() => {
-              if (selectedKeywords.includes(keyword)) {
-                setSelectedKeywords((prev) => prev.filter((k) => k !== keyword))
+              if (selectedKeywords.includes(keyword.id)) {
+                setSelectedKeywords((prev) =>
+                  prev.filter((k) => k !== keyword.id)
+                )
               } else {
-                setSelectedKeywords((prev) => [...prev, keyword])
+                setSelectedKeywords((prev) =>
+                  prev.length < 4 ? [...prev, keyword.id] : prev
+                )
               }
             }}
           >
-            {keyword}
+            {keyword.name}
           </Button>
         ))}
       </div>
@@ -70,6 +61,7 @@ export default function Page() {
           sessionStorage.setItem('onboarding', 'completed')
           window.location.href = '/idea-check'
         }}
+        disabled={selectedKeywords.length < 1}
       >
         다음으로
       </Button>

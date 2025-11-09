@@ -1,6 +1,12 @@
+import { ReactNode } from 'react'
+
 import Sidebar from '@/components/shared/side-bar'
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+interface Props {
+  children: ReactNode
+}
+
+export default function AppLayout({ children }: Props) {
   return (
     <div className="flex min-h-dvh">
       <aside className="w-64">

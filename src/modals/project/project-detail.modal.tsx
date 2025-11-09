@@ -2,28 +2,18 @@
 
 import { User } from 'lucide-react'
 
+import { ProjectDetailResponse } from '@/api'
 import { OverlayProps } from '@/libs/utils'
 
 interface ProjectDetailModalProps extends OverlayProps {
-  project?: {
-    uploader: string
-    title: string
-    description: string
-    keywords: string[]
-    imageUrl?: string
-  }
+  project: ProjectDetailResponse
 }
 
+// TODO: 여기 실제 데이터 확인해봐야함
 export default function ProjectDetailModal({
   isOpen,
   close,
-  project = {
-    uploader: 'Google',
-    title: '주제 내용입니다. 어쩌구 저쩌구~',
-    description:
-      '설명 내용입니다. 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구 어쩌구 저쩌구',
-    keywords: ['웹 서비스', 'AI', '아이디어 검사'],
-  },
+  project,
 }: ProjectDetailModalProps) {
   if (!isOpen) return null
 
@@ -41,14 +31,14 @@ export default function ProjectDetailModal({
             <User className="text-neutral-600" size={24} />
           </div>
           <p className="text-[35px] font-medium text-white">
-            {project.uploader}
+            {project.ownerId}
           </p>
         </div>
 
-        <p className="text-[24px] font-medium text-white">{project.title}</p>
+        <p className="text-[24px] font-medium text-white">{project.subject}</p>
 
         <div className="flex gap-3">
-          {project.keywords.map((keyword, index) => (
+          {project.keywords?.map((keyword, index) => (
             <div
               key={index}
               className="flex items-center justify-center rounded-lg bg-teal-500 px-[18px] py-3"

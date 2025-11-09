@@ -1,113 +1,147 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { Search } from 'lucide-react'
 import { overlay } from 'overlay-kit'
 
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { ProjectListResponse, projectApi } from '@/api'
+import { Button } from '@/components/ui/button'
 import ProjectDetailModal from '@/modals/project/project-detail.modal'
+import { useUserStore } from '@/stores'
 
 export default function Page() {
-  const [category, setCategory] = useState('all')
-  const [sort, setSort] = useState('latest')
+  const { user } = useUserStore()
+
+  const [projects, setProjects] = useState<ProjectListResponse[]>([])
+  const [page, setPage] = useState(0)
+
+  useEffect(() => {
+    ;(async () => {
+      const response = await projectApi.getProjectList({ page, size: 9 })
+      setProjects((prev) => [...prev, ...response])
+    })()
+  }, [page])
 
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-12 bg-neutral-50 px-7 py-7">
-      <div className="flex w-full items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-6">
-        <div className="relative max-w-xl flex-1">
-          <Search
-            className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
-            size={20}
-          />
-          <Input
-            placeholder="프로젝트 검색..."
-            className="h-10 border-gray-200 bg-gray-50 pl-10"
-          />
-        </div>
+    <div className="flex min-h-dvh flex-col gap-16 px-8 py-20">
+      <section className="flex flex-col items-center">
+        <h1 className="text-3xl font-bold">아이디어 모아보기</h1>
+        <h2 className="text-lg font-medium text-neutral-500">
+          아이디어 영감을 얻어보세요.
+        </h2>
+      </section>
+      {/*<div className="flex w-full items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-6">*/}
+      {/*  <div className="relative max-w-xl flex-1">*/}
+      {/*    <Search*/}
+      {/*      className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"*/}
+      {/*      size={20}*/}
+      {/*    />*/}
+      {/*    <Input*/}
+      {/*      placeholder="프로젝트 검색..."*/}
+      {/*      className="h-10 border-gray-200 bg-gray-50 pl-10"*/}
+      {/*    />*/}
+      {/*  </div>*/}
 
-        <div className="flex items-center gap-2">
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-40 border-gray-200 bg-gray-50">
-              <SelectValue placeholder="카테고리" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              <SelectItem value="ai">AI</SelectItem>
-              <SelectItem value="web">웹</SelectItem>
-              <SelectItem value="app">앱</SelectItem>
-            </SelectContent>
-          </Select>
+      {/*  <div className="flex items-center gap-2">*/}
+      {/*    <Select value={category} onValueChange={setCategory}>*/}
+      {/*      <SelectTrigger className="w-40 border-gray-200 bg-gray-50">*/}
+      {/*        <SelectValue placeholder="카테고리" />*/}
+      {/*      </SelectTrigger>*/}
+      {/*      <SelectContent>*/}
+      {/*        <SelectItem value="all">전체</SelectItem>*/}
+      {/*        <SelectItem value="ai">AI</SelectItem>*/}
+      {/*        <SelectItem value="web">웹</SelectItem>*/}
+      {/*        <SelectItem value="app">앱</SelectItem>*/}
+      {/*      </SelectContent>*/}
+      {/*    </Select>*/}
 
-          <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="w-32 border-gray-200 bg-gray-50">
-              <SelectValue placeholder="정렬" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="latest">최신순</SelectItem>
-              <SelectItem value="popular">인기순</SelectItem>
-              <SelectItem value="views">조회순</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      {/*    <Select value={sort} onValueChange={setSort}>*/}
+      {/*      <SelectTrigger className="w-32 border-gray-200 bg-gray-50">*/}
+      {/*        <SelectValue placeholder="정렬" />*/}
+      {/*      </SelectTrigger>*/}
+      {/*      <SelectContent>*/}
+      {/*        <SelectItem value="latest">최신순</SelectItem>*/}
+      {/*        <SelectItem value="popular">인기순</SelectItem>*/}
+      {/*        <SelectItem value="views">조회순</SelectItem>*/}
+      {/*      </SelectContent>*/}
+      {/*    </Select>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
 
-      <div className="grid grid-cols-3 gap-6">
-        {Array.from({ length: 9 }).map((_, index) => (
-          <div
-            key={index}
-            className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
-            onClick={() =>
-              overlay.open(({ isOpen, close }) => (
-                <ProjectDetailModal isOpen={isOpen} close={close} />
-              ))
-            }
-          >
-            <Image
-              src="https://designcompass.org/wp-content/uploads/2023/12/gemini-01.png"
-              alt="Idea Image"
-              width={300}
-              height={150}
-              className="h-[150px] w-full object-cover"
-            />
-            <div className="flex flex-col gap-2 p-3">
-              <span className="text-sm font-semibold text-neutral-700">
-                구글 제미나이
-              </span>
-              <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
-                텍스트, 이미지 등 다양한 형태의 데이터를 동시에 이해하고 처리할
-                수 있는 AI 모델로 구글의 차세대 AI 플랫폼입니다.
-              </p>
-              <span className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700">
-                AI
-              </span>
+      <div className="flex flex-col items-center gap-4">
+        <div className="grid grid-cols-3 gap-6">
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
+              onClick={async () => {
+                const _project = await projectApi.getProject(project.id)
+
+                overlay.open(({ isOpen, close }) => (
+                  <ProjectDetailModal
+                    isOpen={isOpen}
+                    close={close}
+                    project={_project}
+                  />
+                ))
+              }}
+            >
+              <Image
+                src={project.image}
+                alt={project.subject}
+                width={300}
+                height={150}
+                className="h-[150px] w-full object-cover"
+              />
+              <div className="flex flex-col gap-2 p-3">
+                <span className="text-sm font-semibold text-neutral-700">
+                  {project.subject}
+                </span>
+                <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
+                  {project.description}
+                </p>
+                <div className="flex gap-1.5">
+                  {project.keywords?.map((keyword) => (
+                    <span
+                      key={keyword}
+                      className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700"
+                    >
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        <Button
+          size="lg"
+          className="bg-ideantify hover:bg-ideantify/90 text-white"
+          onClick={() => setPage((prev) => prev + 1)}
+          disabled={projects.length <= page * 9}
+        >
+          더보기
+        </Button>
       </div>
 
-      <Link
-        href="/ideas/new"
-        className="fixed right-8 bottom-8 aspect-square rounded-full border border-zinc-300 bg-white p-5 text-center text-sm leading-tight font-semibold text-teal-400 shadow-lg transition-shadow hover:shadow-xl"
-      >
-        <div className="flex flex-col items-center justify-center gap-0">
-          나도
-          <br />
-          업로드
-          <br />
-          하러가기
-        </div>
-      </Link>
+      {user && (
+        <Link
+          href="/ideas/new"
+          className="fixed right-8 bottom-8 aspect-square rounded-full border border-zinc-300 bg-white p-5 text-center text-sm leading-tight font-semibold text-teal-400 shadow-lg transition-shadow hover:shadow-xl"
+        >
+          <div className="flex flex-col items-center justify-center gap-0">
+            나도
+            <br />
+            업로드
+            <br />
+            하러가기
+          </div>
+        </Link>
+      )}
     </div>
   )
 }
