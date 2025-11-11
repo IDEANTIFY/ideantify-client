@@ -2,14 +2,11 @@
 
 import { useState } from 'react'
 
-import { RedirectType, redirect, usePathname } from 'next/navigation'
+import { redirect, usePathname } from 'next/navigation'
 
-import { Client } from '@stomp/stompjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, ChevronDown, XIcon } from 'lucide-react'
-import SockJS from 'sockjs-client'
 
-import { ideaReportApi } from '@/api'
 import Title from '@/app/(app)/idea-check/components/title'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -65,33 +62,7 @@ ex) 팀플 일정 맞춰주는 앱`}
               <Button
                 disabled={!query}
                 className="absolute right-4 bottom-4 bg-teal-400 text-white hover:bg-teal-400/90 disabled:bg-neutral-500"
-                onClick={async () => {
-                  const { websocket_topic } =
-                    await ideaReportApi.createIdeaReportMetadata({
-                      query: query!,
-                    })
-
-                  const client = new Client({
-                    webSocketFactory: () =>
-                      new SockJS(
-                        process.env.NEXT_PUBLIC_BASE_API_URL + '/ws/chat'
-                      ),
-                    reconnectDelay: 1000,
-                    debug: (str) => console.log(str),
-                    onWebSocketError: (error) => {
-                      console.error('WebSocket 에러:', error)
-                    },
-                  })
-
-                  client.onConnect = () => {
-                    client.subscribe(websocket_topic, (message) => {
-                      setMetadata(JSON.parse(message.body) as Metadata)
-                      client.forceDisconnect()
-                    })
-                  }
-
-                  client.activate()
-                }}
+                onClick={() => redirect('/idea-check/1')}
               >
                 검사하기
               </Button>
@@ -171,37 +142,6 @@ ex) 팀플 일정 맞춰주는 앱`}
               <Button
                 size="lg"
                 className="bg-teal-400 text-white hover:bg-teal-400/90"
-                onClick={async () => {
-                  if (!metadata) return
-
-                  const { websocket_topic } =
-                    await ideaReportApi.createIdeaReport({
-                      query: query!,
-                      ...metadata,
-                    })
-
-                  const client = new Client({
-                    webSocketFactory: () =>
-                      new SockJS(
-                        process.env.NEXT_PUBLIC_BASE_API_URL + '/ws/chat'
-                      ),
-                    reconnectDelay: 1000,
-                    debug: (str) => console.log(str),
-                    onWebSocketError: (error) => {
-                      console.error('WebSocket 에러:', error)
-                    },
-                  })
-
-                  client.onConnect = () => {
-                    client.subscribe(websocket_topic, (message) => {
-                      const { id } = JSON.parse(message.body) as { id: string }
-                      client.forceDisconnect()
-                      redirect(`/idea-check/${id}`, RedirectType.push)
-                    })
-                  }
-
-                  client.activate()
-                }}
               >
                 검사하기
                 <ArrowRight />

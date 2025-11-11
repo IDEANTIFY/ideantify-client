@@ -5,18 +5,31 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { Search } from 'lucide-react'
 import { overlay } from 'overlay-kit'
 
+import { PROJECTS } from '@/__mock__/projects'
 import { ProjectListResponse, projectApi } from '@/api'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import ProjectDetailModal from '@/modals/project/project-detail.modal'
 import { useUserStore } from '@/stores'
 
 export default function Page() {
   const { user } = useUserStore()
 
-  const [projects, setProjects] = useState<ProjectListResponse[]>([])
+  const [, setProjects] = useState<ProjectListResponse[]>([])
   const [page, setPage] = useState(0)
+
+  const [category, setCategory] = useState<string>('all')
+  const [sort, setSort] = useState<string>('latest')
 
   useEffect(() => {
     ;(async () => {
@@ -33,86 +46,74 @@ export default function Page() {
           아이디어 영감을 얻어보세요.
         </h2>
       </section>
-      {/*<div className="flex w-full items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-6">*/}
-      {/*  <div className="relative max-w-xl flex-1">*/}
-      {/*    <Search*/}
-      {/*      className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"*/}
-      {/*      size={20}*/}
-      {/*    />*/}
-      {/*    <Input*/}
-      {/*      placeholder="프로젝트 검색..."*/}
-      {/*      className="h-10 border-gray-200 bg-gray-50 pl-10"*/}
-      {/*    />*/}
-      {/*  </div>*/}
+      <div className="flex w-full items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-6">
+        <div className="relative max-w-xl flex-1">
+          <Search
+            className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <Input
+            placeholder="프로젝트 검색..."
+            className="h-10 border-gray-200 bg-gray-50 pl-10"
+          />
+        </div>
 
-      {/*  <div className="flex items-center gap-2">*/}
-      {/*    <Select value={category} onValueChange={setCategory}>*/}
-      {/*      <SelectTrigger className="w-40 border-gray-200 bg-gray-50">*/}
-      {/*        <SelectValue placeholder="카테고리" />*/}
-      {/*      </SelectTrigger>*/}
-      {/*      <SelectContent>*/}
-      {/*        <SelectItem value="all">전체</SelectItem>*/}
-      {/*        <SelectItem value="ai">AI</SelectItem>*/}
-      {/*        <SelectItem value="web">웹</SelectItem>*/}
-      {/*        <SelectItem value="app">앱</SelectItem>*/}
-      {/*      </SelectContent>*/}
-      {/*    </Select>*/}
+        <div className="flex items-center gap-2">
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-40 border-gray-200 bg-gray-50">
+              <SelectValue placeholder="카테고리" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="ai">AI</SelectItem>
+              <SelectItem value="web">웹</SelectItem>
+              <SelectItem value="app">앱</SelectItem>
+            </SelectContent>
+          </Select>
 
-      {/*    <Select value={sort} onValueChange={setSort}>*/}
-      {/*      <SelectTrigger className="w-32 border-gray-200 bg-gray-50">*/}
-      {/*        <SelectValue placeholder="정렬" />*/}
-      {/*      </SelectTrigger>*/}
-      {/*      <SelectContent>*/}
-      {/*        <SelectItem value="latest">최신순</SelectItem>*/}
-      {/*        <SelectItem value="popular">인기순</SelectItem>*/}
-      {/*        <SelectItem value="views">조회순</SelectItem>*/}
-      {/*      </SelectContent>*/}
-      {/*    </Select>*/}
-      {/*  </div>*/}
-      {/*</div>*/}
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-32 border-gray-200 bg-gray-50">
+              <SelectValue placeholder="정렬" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="latest">최신순</SelectItem>
+              <SelectItem value="popular">인기순</SelectItem>
+              <SelectItem value="views">조회순</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       <div className="flex flex-col items-center gap-4">
         <div className="grid grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {PROJECTS.slice(2, 2 + 9).map((project, idx) => (
             <div
-              key={project.id}
+              key={idx}
               className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
               onClick={async () => {
-                const _project = await projectApi.getProject(project.id)
-
                 overlay.open(({ isOpen, close }) => (
                   <ProjectDetailModal
                     isOpen={isOpen}
                     close={close}
-                    project={_project}
+                    // project={_project}
                   />
                 ))
               }}
             >
               <Image
-                src={project.image}
-                alt={project.subject}
+                src={project.imageUrl}
+                alt={project.projectName}
                 width={300}
                 height={150}
                 className="h-[150px] w-full object-cover"
               />
               <div className="flex flex-col gap-2 p-3">
                 <span className="text-sm font-semibold text-neutral-700">
-                  {project.subject}
+                  {project.projectName}
                 </span>
                 <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
-                  {project.description}
+                  {project.teamName}
                 </p>
-                <div className="flex gap-1.5">
-                  {project.keywords?.map((keyword) => (
-                    <span
-                      key={keyword}
-                      className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700"
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
               </div>
             </div>
           ))}
@@ -122,7 +123,7 @@ export default function Page() {
           size="lg"
           className="bg-ideantify hover:bg-ideantify/90 text-white"
           onClick={() => setPage((prev) => prev + 1)}
-          disabled={projects.length <= page * 9}
+          // disabled={projects.length <= page * 9}
         >
           더보기
         </Button>

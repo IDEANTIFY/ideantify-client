@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import Link from 'next/link'
 
 import { Clock, SendHorizonal, Zap } from 'lucide-react'
 
-import { ChatRoomResponse, chatApi } from '@/api'
+import { ROOMS } from '@/__mock__/rooms'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/libs/utils'
@@ -16,14 +16,6 @@ export default function Page() {
 
   const [isIdeaDeveloping, setIsIdeaDeveloping] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
-
-  const [rooms, setRooms] = useState<ChatRoomResponse[]>([])
-
-  useEffect(() => {
-    ;(async () => {
-      setRooms((await chatApi.getUserChatRooms()).chatRooms)
-    })()
-  }, [])
 
   return (
     <div className="flex min-h-dvh w-full flex-col">
@@ -78,23 +70,24 @@ export default function Page() {
       </section>
 
       <section className="flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto bg-neutral-50 px-4 py-8">
-        {rooms.map((room) => (
+        {ROOMS.map(({ title, ai }) => (
           <Link
-            key={room.chatRoomId}
-            href={`/chat-bot/${room.chatRoomId}`}
+            key={title}
+            href={`/chat-bot/${title}`}
             className="flex w-full max-w-2xl flex-col gap-2 rounded-xl border border-neutral-100 bg-white px-5 py-4 transition-colors hover:bg-neutral-50"
           >
             <div className="flex items-center justify-between gap-2">
               <p className="line-clamp-1 flex-1 text-base leading-6 font-medium text-neutral-700">
-                {room.title}
+                {title}
               </p>
               <div className="flex shrink-0 items-center gap-1">
                 <Clock size={18} className="text-neutral-500" />
                 <p className="text-xs leading-4 whitespace-nowrap text-neutral-500">
-                  {new Date(room.createdAt).toLocaleDateString('ko-KR', {})}
+                  {new Date().toLocaleDateString('ko-KR', {})}
                 </p>
               </div>
             </div>
+            <span className="line-clamp-2 text-neutral-500">{ai}</span>
           </Link>
         ))}
       </section>

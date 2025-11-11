@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 
-import { ResultItem } from '@/api'
+import { PROJECT_DETAIL } from '@/__mock__/project_detail'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
 import { OverlayProps } from '@/libs/utils'
 
 interface ReportProjectDetailModalProps extends OverlayProps {
-  result: ResultItem
+  result: (typeof PROJECT_DETAIL.detailed_report.detailed_results)[0]
 }
 
 export default function ReportProjectDetailModal({
@@ -37,7 +37,7 @@ export default function ReportProjectDetailModal({
 
         <div className="flex items-center gap-4">
           <Image
-            src={result.thumbnail || 'https://placehold.co/240x240'}
+            src={'/placeholder.png'}
             alt={result.title}
             width={240}
             height={240}

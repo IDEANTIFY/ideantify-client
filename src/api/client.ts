@@ -1,5 +1,4 @@
 import ky from 'ky'
-import { toast } from 'sonner'
 
 import { useAuthStore } from '@/stores/auth-store'
 
@@ -25,14 +24,14 @@ export const apiClient = ky.create({
       async (request, options, response) => {
         if (!response.ok) {
           const data = await response.json<ApiResponse<unknown>>()
-          toast.error(data.message || '요청에 실패했습니다.')
+          // toast.error(data.message || '요청에 실패했습니다.')
           throw new Error(data.message || 'Request failed')
         }
 
         const data = await response.json<ApiResponse<unknown>>()
 
         if (!data.success) {
-          toast.error(data.message || '요청에 실패했습니다.')
+          // toast.error(data.message || '요청에 실패했습니다.')
           throw new Error(data.message || 'Request failed')
         }
 

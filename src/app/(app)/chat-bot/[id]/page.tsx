@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from 'react'
 
 import { SendHorizonal } from 'lucide-react'
 
+import { CHATS } from '@/__mock__/chats'
 import { ChatMessage, chatApi } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,11 +17,15 @@ export default function Page({ params }: Props) {
   const { id: roomId } = use(params)
 
   const [query, setQuery] = useState('')
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [, setMessages] = useState<ChatMessage[]>([])
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+
     ;(async () => {
       const response = await chatApi.getUserChatMessages(roomId, {
         page: 0,
@@ -43,27 +48,26 @@ export default function Page({ params }: Props) {
       >
         <div className="flex w-full max-w-2xl flex-col gap-4">
           <div className="flex flex-col gap-4">
-            {messages.map((message) =>
-              message.role === 'user' ? (
+            {CHATS.turns.map(({ human, ai }, idx) => (
+              <>
                 <div
-                  key={message.id}
-                  className="flex w-full items-center justify-center rounded-xl border border-neutral-100 bg-white p-4"
+                  key={idx + '_human'}
+                  className="flex w-full items-center justify-center rounded-xl border border-neutral-100 bg-white p-4 whitespace-pre-line"
                 >
                   <p className="flex-1 text-base leading-6 text-neutral-700">
-                    {message.content}
+                    {human}
                   </p>
                 </div>
-              ) : (
                 <div
-                  key={message.id}
+                  key={idx + '_ai'}
                   className="flex w-full items-center justify-center rounded-xl p-4"
                 >
-                  <p className="flex-1 text-base leading-6 text-neutral-700">
-                    {message.content}
+                  <p className="flex-1 text-base leading-6 whitespace-pre-line text-neutral-700">
+                    {ai}
                   </p>
                 </div>
-              )
-            )}
+              </>
+            ))}
           </div>
         </div>
       </div>

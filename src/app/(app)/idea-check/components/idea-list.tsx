@@ -8,12 +8,13 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { overlay } from 'overlay-kit'
 
+import { PROJECTS } from '@/__mock__/projects'
 import { ProjectListResponse, projectApi } from '@/api'
 import { Button } from '@/components/ui/button'
 import ProjectDetailModal from '@/modals/project/project-detail.modal'
 
 export default function IdeaList() {
-  const [projects, setProjects] = useState<ProjectListResponse[]>([])
+  const [, setProjects] = useState<ProjectListResponse[]>([])
 
   useEffect(() => {
     ;(async () => {
@@ -31,47 +32,35 @@ export default function IdeaList() {
         </h3>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-6">
-        {projects.map((project) => (
+      <div className="flex max-w-xl flex-wrap justify-center gap-6">
+        {PROJECTS.slice(0, 2).map((project, idx) => (
           <div
-            key={project.id}
+            key={idx}
             className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
             onClick={async () => {
-              const _project = await projectApi.getProject(project.id)
-
               overlay.open(({ isOpen, close }) => (
                 <ProjectDetailModal
                   isOpen={isOpen}
                   close={close}
-                  project={_project}
+                  // project={_project}
                 />
               ))
             }}
           >
             <Image
-              src={project.image}
-              alt={project.subject}
+              src={project.imageUrl}
+              alt={project.projectName}
               width={300}
               height={150}
               className="h-[150px] w-full object-cover"
             />
             <div className="flex flex-col gap-2 p-3">
               <span className="text-sm font-semibold text-neutral-700">
-                {project.subject}
+                {project.projectName}
               </span>
               <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
-                {project.description}
+                {project.teamName}
               </p>
-              <div className="flex gap-1.5">
-                {project.keywords?.map((keyword) => (
-                  <span
-                    key={keyword}
-                    className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700"
-                  >
-                    {keyword}
-                  </span>
-                ))}
-              </div>
             </div>
           </div>
         ))}

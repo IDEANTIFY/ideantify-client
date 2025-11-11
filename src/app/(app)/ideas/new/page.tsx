@@ -38,6 +38,7 @@ export default function Page() {
     },
   })
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const keywords = form.watch('keywords') || []
   const members = form.watch('members') || []
 

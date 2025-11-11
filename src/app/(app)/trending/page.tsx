@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { TrendingIssueResponse, userApi } from '@/api'
+import { NEWS } from '@/__mock__/news'
+import { TrendingIssueResponse } from '@/api'
 import { Button } from '@/components/ui/button'
 
 export default function Page() {
@@ -13,9 +14,21 @@ export default function Page() {
   const [page, setPage] = useState(1)
 
   useEffect(() => {
-    ;(async () => {
-      setIssues(await userApi.getTrendingIssues())
-    })()
+    // ;(async () => {
+    //   setIssues(await userApi.getTrendingIssues())
+    // })()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIssues(
+      NEWS.map((issue) => ({
+        title: issue.title,
+        link: issue.link,
+        source: issue.source,
+        date: issue.date,
+        image: issue.image,
+        snippet: issue.snippet,
+        matchedKeywords: issue.matched_keywords,
+      })) as TrendingIssueResponse[]
+    )
   }, [])
 
   return (
@@ -50,7 +63,7 @@ export default function Page() {
                 className="flex cursor-pointer flex-col gap-2 overflow-hidden rounded-md border bg-white hover:bg-neutral-50"
               >
                 <Image
-                  src={issue.image || 'https://placehold.co/300x150'}
+                  src={issue.image || '/placeholder.png'}
                   alt={issue.title}
                   width={300}
                   height={150}
@@ -60,7 +73,9 @@ export default function Page() {
                   <span className="text-sm text-neutral-500">
                     {issue.source}
                   </span>
-                  <span className="font-medium">{issue.title}</span>
+                  <span className="line-clamp-2 font-medium">
+                    {issue.title}
+                  </span>
                 </div>
               </Link>
             ))

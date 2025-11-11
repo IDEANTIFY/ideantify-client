@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ChartColumnIncreasing, Download, SendHorizonal } from 'lucide-react'
 import { overlay } from 'overlay-kit'
 
-import { ResultItem } from '@/api'
+import { PROJECT_DETAIL } from '@/__mock__/project_detail'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
@@ -18,7 +18,7 @@ interface Props {
   creativity: number
   feasibility: number
   analysisNarrative: string
-  detailedResults: ResultItem[]
+  detailedResults: typeof PROJECT_DETAIL.detailed_report.detailed_results
 }
 
 export default function IdeaReport({
@@ -111,7 +111,7 @@ export default function IdeaReport({
       <section className="grid grid-cols-3 gap-4">
         {detailedResults.map((result) => (
           <div
-            key={result.id}
+            key={result.title}
             className="flex cursor-pointer flex-col gap-4 rounded-lg border bg-white p-5 hover:bg-neutral-50"
             onClick={() =>
               overlay.open(({ isOpen, close }) => (
@@ -125,20 +125,17 @@ export default function IdeaReport({
           >
             <div className="flex justify-between">
               <div className="flex flex-col">
-                <h2 className="font-semibold text-neutral-700">
+                <h2 className="line-clamp-1 font-semibold text-neutral-700">
                   {result.title}
                 </h2>
-                <h3 className="text-xs font-medium text-neutral-500">
-                  {result.keyword}
-                </h3>
               </div>
               <span className="h-fit rounded-full bg-red-200 px-4 py-1.5 text-sm font-medium text-red-500">
-                {result.score}%
+                {(result.score * 100).toFixed(2)}%
               </span>
             </div>
             <div className="flex h-[120px] gap-4 overflow-hidden">
               <Image
-                src={result.thumbnail || 'https://placehold.co/120x120'}
+                src={'/placeholder.png'}
                 alt={result.title}
                 width={120}
                 height={120}
