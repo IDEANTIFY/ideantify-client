@@ -6,7 +6,13 @@ import {
   CreateChatRoomResponse,
   UserChatRequest,
   UserChatSendResponse,
-} from '@/api'
+} from '@/api/types'
+
+export interface IdeaReport {
+  id: string
+  query: string
+  analysisNarrative: string
+}
 
 export const chatApi = {
   getUserChatRooms: async (): Promise<ChatRoomListResponse> => {
@@ -52,5 +58,9 @@ export const chatApi = {
     data: CreateChatRoomRequest
   ): Promise<CreateChatRoomResponse> => {
     return apiClient.post('api/develop/rooms', { json: data }).json()
+  },
+
+  getIdeaReports: async (): Promise<IdeaReport[]> => {
+    return apiClient.get('api/idea-reports/results').json()
   },
 }
