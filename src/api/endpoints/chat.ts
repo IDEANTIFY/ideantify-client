@@ -16,13 +16,13 @@ export interface IdeaReport {
 
 export const chatApi = {
   getUserChatRooms: async (): Promise<ChatRoomListResponse> => {
-    return apiClient.get('api/users/rooms').json()
+    return apiClient.get('users/rooms').json()
   },
 
   createChatRoom: async (
     data: CreateChatRoomRequest
   ): Promise<CreateChatRoomResponse> => {
-    return apiClient.post('api/users/rooms', { json: data }).json()
+    return apiClient.post('users/rooms', { json: data }).json()
   },
 
   getUserChatMessages: async (
@@ -30,7 +30,7 @@ export const chatApi = {
     params?: { page?: number; size?: number }
   ): Promise<ChatMessageListResponse> => {
     return apiClient
-      .get(`api/users/rooms/${chatRoomId}`, {
+      .get(`users/rooms/${chatRoomId}`, {
         searchParams: params as Record<string, string>,
       })
       .json()
@@ -40,9 +40,7 @@ export const chatApi = {
     chatRoomId: string,
     data: UserChatRequest
   ): Promise<UserChatSendResponse> => {
-    return apiClient
-      .post(`api/users/rooms/${chatRoomId}`, { json: data })
-      .json()
+    return apiClient.post(`users/rooms/${chatRoomId}`, { json: data }).json()
   },
 
   createIdeaReportChatRoom: async (
@@ -50,17 +48,13 @@ export const chatApi = {
     data: CreateChatRoomRequest
   ): Promise<CreateChatRoomResponse> => {
     return apiClient
-      .post(`api/idea-reports/${ideaReportId}/rooms`, { json: data })
+      .post(`idea-reports/${ideaReportId}/rooms`, { json: data })
       .json()
   },
 
   createDevelopChatRoom: async (
     data: CreateChatRoomRequest
   ): Promise<CreateChatRoomResponse> => {
-    return apiClient.post('api/develop/rooms', { json: data }).json()
-  },
-
-  getIdeaReports: async (): Promise<IdeaReport[]> => {
-    return apiClient.get('api/idea-reports/results').json()
+    return apiClient.post('develop/rooms', { json: data }).json()
   },
 }

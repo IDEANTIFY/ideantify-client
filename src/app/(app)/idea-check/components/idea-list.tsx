@@ -17,7 +17,7 @@ export default function IdeaList() {
 
   useEffect(() => {
     ;(async () => {
-      const response = await projectApi.getProjectList({ own: true })
+      const response = await projectApi.getProjectList()
       setProjects(response)
     })()
   }, [])
@@ -32,7 +32,7 @@ export default function IdeaList() {
       </div>
 
       <div className="flex flex-wrap justify-center gap-6">
-        {projects.map((project) => (
+        {projects.slice(0, 2).map((project) => (
           <div
             key={project.id}
             className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
@@ -62,16 +62,6 @@ export default function IdeaList() {
               <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
                 {project.description}
               </p>
-              <div className="flex gap-1.5">
-                {project.keywords?.map((keyword) => (
-                  <span
-                    key={keyword}
-                    className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700"
-                  >
-                    {keyword}
-                  </span>
-                ))}
-              </div>
             </div>
           </div>
         ))}

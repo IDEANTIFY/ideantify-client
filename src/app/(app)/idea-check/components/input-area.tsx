@@ -1,20 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
-import { RedirectType, redirect, usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 
 import { Client } from '@stomp/stompjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, ChevronDown, XIcon } from 'lucide-react'
-import SockJS from 'sockjs-client'
+import { overlay } from 'overlay-kit'
 
-import { ideaReportApi } from '@/api'
+import { IdeaReportListResponse, ideaReportApi } from '@/api'
 import Title from '@/app/(app)/idea-check/components/title'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/libs/utils'
+import { AnalyzingModal } from '@/modals/idea-check'
 
 interface Metadata {
   summary: string
@@ -39,13 +41,23 @@ interface Props {
 
 export default function InputArea({ defaultQuery, defaultMetadata }: Props) {
   const pathname = usePathname()
+  const router = useRouter()
 
   const [query, setQuery] = useState<string | undefined>(defaultQuery)
   const [metadata, setMetadata] = useState<Metadata | undefined>(
     defaultMetadata
   )
+  const [list, setList] = useState<IdeaReportListResponse[]>([])
 
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
+  const [isListOpen, setIsListOpen] = useState(false)
+
+  useEffect(() => {
+    ;(async () => {
+      const ideaReportListResponses = await ideaReportApi.getIdeaReportList()
+      setList(ideaReportListResponses)
+    })()
+  }, [])
 
   return (
     <section className="flex w-full max-w-2xl flex-col items-center gap-6 pt-32 pb-12">
@@ -66,31 +78,46 @@ ex) 팀플 일정 맞춰주는 앱`}
                 disabled={!query}
                 className="absolute right-4 bottom-4 bg-teal-400 text-white hover:bg-teal-400/90 disabled:bg-neutral-500"
                 onClick={async () => {
-                  const { websocket_topic } =
-                    await ideaReportApi.createIdeaReportMetadata({
-                      query: query!,
+                  try {
+                    const { websocket_topic } =
+                      await ideaReportApi.createIdeaReportMetadata({
+                        query: query!,
+                      })
+
+                    let closeModal: (() => void) | null = null
+
+                    overlay.open(({ isOpen, close }) => {
+                      closeModal = close
+                      return <AnalyzingModal isOpen={isOpen} close={close} />
                     })
 
-                  const client = new Client({
-                    webSocketFactory: () =>
-                      new SockJS(
-                        process.env.NEXT_PUBLIC_BASE_API_URL + '/ws/chat'
-                      ),
-                    reconnectDelay: 1000,
-                    debug: (str) => console.log(str),
-                    onWebSocketError: (error) => {
-                      console.error('WebSocket 에러:', error)
-                    },
-                  })
+                    const wsUrl = process.env
+                      .NEXT_PUBLIC_BASE_API_URL!.replace('https://', 'wss://')
+                      .replace('http://', 'ws://')
 
-                  client.onConnect = () => {
-                    client.subscribe(websocket_topic, (message) => {
-                      setMetadata(JSON.parse(message.body) as Metadata)
-                      client.forceDisconnect()
+                    const client = new Client({
+                      brokerURL: `${wsUrl}/ws/chat`,
+                      reconnectDelay: 0,
+                      debug:
+                        process.env.NODE_ENV === 'development'
+                          ? (str) => console.log(str)
+                          : undefined,
+                      onWebSocketError: (error) => {
+                        console.error('WebSocket 연결 오류:', error)
+                      },
                     })
+
+                    client.onConnect = () => {
+                      client.subscribe(websocket_topic, (message) => {
+                        setMetadata(JSON.parse(message.body) as Metadata)
+                        closeModal?.()
+                      })
+                    }
+
+                    client.activate()
+                  } catch (error) {
+                    console.error('분석 요청 실패:', error)
                   }
-
-                  client.activate()
                 }}
               >
                 검사하기
@@ -102,6 +129,42 @@ ex) 팀플 일정 맞춰주는 앱`}
               ex) 강의 시간표와 팀원 일정표를 분석해 최적 회의 시간을 추천해주는
               서비스
             </span>
+            <div
+              className="text- flex cursor-pointer flex-col items-center gap-1 text-gray-600"
+              onClick={() => setIsListOpen((prev) => !prev)}
+            >
+              <span>아이디어 구체화 내용 보기</span>
+              <ChevronDown
+                className={cn(
+                  'transition-all duration-300',
+                  isListOpen ? 'rotate-180' : 'rotate-0'
+                )}
+              />
+            </div>
+
+            <AnimatePresence initial={false}>
+              {isListOpen && (
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: 'auto' }}
+                  exit={{ height: 0 }}
+                  transition={{ duration: 0.3, ease: 'linear' }}
+                  className="flex w-full flex-col gap-3 overflow-hidden"
+                >
+                  {list.map((item) => (
+                    <Fragment key={item.id}>
+                      <Link
+                        href={`/idea-check/${item.id}`}
+                        className="text-sm text-neutral-500"
+                      >
+                        {item.query}
+                      </Link>
+                      <hr className="bg-neutral-500" />
+                    </Fragment>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         ) : (
           <section className="flex flex-col items-center gap-6">
@@ -143,8 +206,9 @@ ex) 팀플 일정 맞춰주는 앱`}
                   className="w-full overflow-hidden"
                 >
                   <div className="flex w-full flex-col gap-4 rounded-xl border bg-gray-100 px-12 py-8">
-                    {(Object.keys(metadata) as (keyof Metadata)[]).map(
-                      (key) => (
+                    {(Object.keys(metadata) as (keyof Metadata)[])
+                      .slice(1)
+                      .map((key) => (
                         <div key={key} className="flex flex-col gap-0.5">
                           <span className="font-medium text-teal-400">
                             {MetadataLabel[key]}
@@ -160,8 +224,7 @@ ex) 팀플 일정 맞춰주는 앱`}
                             }
                           />
                         </div>
-                      )
-                    )}
+                      ))}
                   </div>
                 </motion.div>
               )}
@@ -174,33 +237,50 @@ ex) 팀플 일정 맞춰주는 앱`}
                 onClick={async () => {
                   if (!metadata) return
 
-                  const { websocket_topic } =
-                    await ideaReportApi.createIdeaReport({
-                      query: query!,
-                      ...metadata,
+                  try {
+                    const { websocket_topic } =
+                      await ideaReportApi.createIdeaReport({
+                        ...metadata,
+                        query: query!,
+                      })
+
+                    let closeModal: (() => void) | null = null
+
+                    overlay.open(({ isOpen, close }) => {
+                      closeModal = close
+                      return <AnalyzingModal isOpen={isOpen} close={close} />
                     })
 
-                  const client = new Client({
-                    webSocketFactory: () =>
-                      new SockJS(
-                        process.env.NEXT_PUBLIC_BASE_API_URL + '/ws/chat'
-                      ),
-                    reconnectDelay: 1000,
-                    debug: (str) => console.log(str),
-                    onWebSocketError: (error) => {
-                      console.error('WebSocket 에러:', error)
-                    },
-                  })
+                    const wsUrl = process.env
+                      .NEXT_PUBLIC_BASE_API_URL!.replace('https://', 'wss://')
+                      .replace('http://', 'ws://')
 
-                  client.onConnect = () => {
-                    client.subscribe(websocket_topic, (message) => {
-                      const { id } = JSON.parse(message.body) as { id: string }
-                      client.forceDisconnect()
-                      redirect(`/idea-check/${id}`, RedirectType.push)
+                    const client = new Client({
+                      brokerURL: `${wsUrl}/ws/chat`,
+                      reconnectDelay: 0,
+                      debug:
+                        process.env.NODE_ENV === 'development'
+                          ? (str) => console.log(str)
+                          : undefined,
+                      onWebSocketError: (error) => {
+                        console.error('WebSocket 연결 오류:', error)
+                      },
                     })
+
+                    client.onConnect = () => {
+                      client.subscribe(websocket_topic, (message) => {
+                        const { id } = JSON.parse(message.body) as {
+                          id: string
+                        }
+                        router.push(`/idea-check/${id}`)
+                        closeModal?.()
+                      })
+                    }
+
+                    client.activate()
+                  } catch (error) {
+                    console.error('분석 요청 실패:', error)
                   }
-
-                  client.activate()
                 }}
               >
                 검사하기

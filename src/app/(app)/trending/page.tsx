@@ -6,17 +6,29 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { TrendingIssueResponse, userApi } from '@/api'
-import { Button } from '@/components/ui/button'
 
 export default function Page() {
   const [issues, setIssues] = useState<TrendingIssueResponse[]>([])
-  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     ;(async () => {
-      setIssues(await userApi.getTrendingIssues())
+      try {
+        setIssues(await userApi.getTrendingIssues())
+      } finally {
+        setLoading(false)
+      }
     })()
   }, [])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center">
+        <span className="text-lg text-neutral-500">로딩 중...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-dvh flex-col gap-16 px-8 py-20">
@@ -42,7 +54,7 @@ export default function Page() {
       <div className="flex flex-col items-center gap-4">
         <div className="grid w-2xl grid-cols-3 gap-8">
           {issues.length > 0 ? (
-            issues.slice(0, 9 * page).map((issue) => (
+            issues.slice(0, 9).map((issue) => (
               <Link
                 key={issue.link}
                 href={issue.link}
@@ -50,7 +62,7 @@ export default function Page() {
                 className="flex cursor-pointer flex-col gap-2 overflow-hidden rounded-md border bg-white hover:bg-neutral-50"
               >
                 <Image
-                  src={issue.image || 'https://placehold.co/300x150'}
+                  src={issue.image || '/placeholder.png'}
                   alt={issue.title}
                   width={300}
                   height={150}
@@ -70,15 +82,6 @@ export default function Page() {
             </span>
           )}
         </div>
-
-        <Button
-          size="lg"
-          className="bg-ideantify hover:bg-ideantify/90 text-white"
-          onClick={() => setPage((prev) => prev + 1)}
-          disabled={issues.length <= page * 9}
-        >
-          더보기
-        </Button>
       </div>
     </div>
   )

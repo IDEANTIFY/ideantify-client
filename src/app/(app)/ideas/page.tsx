@@ -18,12 +18,23 @@ export default function Page() {
   const [projects, setProjects] = useState<ProjectListResponse[]>([])
   const [page, setPage] = useState(0)
 
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     ;(async () => {
       const response = await projectApi.getProjectList({ page, size: 9 })
       setProjects((prev) => [...prev, ...response])
+      setLoading(false)
     })()
   }, [page])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center">
+        <span className="text-lg text-neutral-500">로딩 중...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-dvh flex-col gap-16 px-8 py-20">
@@ -34,7 +45,7 @@ export default function Page() {
         </h2>
       </section>
       {/*<div className="flex w-full items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-6">*/}
-      {/*  <div className="relative max-w-xl flex-1">*/}
+      {/*  <div className="relative max-w-3xl flex-1">*/}
       {/*    <Search*/}
       {/*      className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"*/}
       {/*      size={20}*/}
@@ -73,49 +84,45 @@ export default function Page() {
 
       <div className="flex flex-col items-center gap-4">
         <div className="grid grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
-              onClick={async () => {
-                const _project = await projectApi.getProject(project.id)
+          {projects.length > 0 ? (
+            projects.map((project) => (
+              <div
+                key={project.id}
+                className="max-w-xs overflow-clip rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
+                onClick={async () => {
+                  const _project = await projectApi.getProject(project.id)
 
-                overlay.open(({ isOpen, close }) => (
-                  <ProjectDetailModal
-                    isOpen={isOpen}
-                    close={close}
-                    project={_project}
-                  />
-                ))
-              }}
-            >
-              <Image
-                src={project.image}
-                alt={project.subject}
-                width={300}
-                height={150}
-                className="h-[150px] w-full object-cover"
-              />
-              <div className="flex flex-col gap-2 p-3">
-                <span className="text-sm font-semibold text-neutral-700">
-                  {project.subject}
-                </span>
-                <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
-                  {project.description}
-                </p>
-                <div className="flex gap-1.5">
-                  {project.keywords?.map((keyword) => (
-                    <span
-                      key={keyword}
-                      className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700"
-                    >
-                      {keyword}
-                    </span>
-                  ))}
+                  overlay.open(({ isOpen, close }) => (
+                    <ProjectDetailModal
+                      isOpen={isOpen}
+                      close={close}
+                      project={_project}
+                    />
+                  ))
+                }}
+              >
+                <Image
+                  src={project.image}
+                  alt={project.subject}
+                  width={300}
+                  height={150}
+                  className="h-[150px] w-full object-cover"
+                />
+                <div className="flex flex-col gap-2 p-3">
+                  <span className="text-sm font-semibold text-neutral-700">
+                    {project.subject}
+                  </span>
+                  <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
+                    {project.description}
+                  </p>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <span className="col-span-3 text-center text-neutral-500">
+              등록된 아이디어가 없습니다.
+            </span>
+          )}
         </div>
 
         <Button

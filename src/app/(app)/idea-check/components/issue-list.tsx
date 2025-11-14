@@ -34,10 +34,10 @@ export default function IssueList() {
             key={issue.link}
             href={issue.link}
             target="_blank"
-            className="flex cursor-pointer flex-col gap-2 overflow-hidden rounded-md border bg-white hover:bg-neutral-50"
+            className="flex max-w-[318px] cursor-pointer flex-col gap-2 overflow-hidden rounded-md border bg-white hover:bg-neutral-50"
           >
             <Image
-              src={issue.image || 'https://placehold.co/300x150'}
+              src={issue.image || '/placeholder.png'}
               alt={issue.title}
               width={300}
               height={150}

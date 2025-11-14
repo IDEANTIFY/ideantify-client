@@ -1,8 +1,13 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
+import { useRouter } from 'next/navigation'
+
 import { User } from 'lucide-react'
 
-import { ProjectDetailResponse } from '@/api'
+import { ProjectDetailResponse, UserResponse, userApi } from '@/api'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { OverlayProps } from '@/libs/utils'
 
 interface ProjectDetailModalProps extends OverlayProps {
@@ -15,6 +20,44 @@ export default function ProjectDetailModal({
   close,
   project,
 }: ProjectDetailModalProps) {
+  const router = useRouter()
+  const [members, setMembers] = useState<UserResponse[]>([])
+  const [isLoadingMembers, setIsLoadingMembers] = useState(true)
+
+  useEffect(() => {
+    if (isOpen && project.members && project.members.length > 0) {
+      ;(async () => {
+        setIsLoadingMembers(true)
+        try {
+          const memberData = await Promise.all(
+            project.members!.map((memberId) => userApi.getUserProfile(memberId))
+          )
+          setMembers(memberData)
+        } catch (error) {
+          console.error('멤버 정보 불러오기 실패:', error)
+        } finally {
+          setIsLoadingMembers(false)
+        }
+      })()
+    }
+  }, [isOpen, project.members])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        close()
+      }
+    }
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, close])
+
   if (!isOpen) return null
 
   return (
@@ -27,38 +70,57 @@ export default function ProjectDetailModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-200">
-            <User className="text-neutral-600" size={24} />
-          </div>
           <p className="text-[35px] font-medium text-white">
-            {project.ownerId}
+            {project.subject}
           </p>
-        </div>
-
-        <p className="text-[24px] font-medium text-white">{project.subject}</p>
-
-        <div className="flex gap-3">
-          {project.keywords?.map((keyword, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-center rounded-lg bg-teal-500 px-[18px] py-3"
-            >
-              <p className="text-sm text-white">{keyword}</p>
-            </div>
-          ))}
         </div>
 
         <p className="text-base font-medium text-white">
           {project.description}
         </p>
 
-        <div className="relative">
-          <div className="overflow-hidden rounded-[23px] border-[3.841px] border-black/10">
-            <div className="flex min-h-[500px] w-full items-center justify-center bg-neutral-300">
-              <p className="text-[30px] text-black">첨부한 파일 임베드</p>
+        {project.members && project.members.length > 0 && (
+          <div className="flex flex-col gap-4">
+            <p className="text-xl font-medium text-white">팀원</p>
+            <div className="flex flex-wrap gap-4">
+              {isLoadingMembers ? (
+                <p className="text-sm text-white/70">로딩 중...</p>
+              ) : (
+                members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg bg-white/10 px-4 py-3 transition-colors hover:bg-white/20"
+                    onClick={() => {
+                      router.push(`/users/${member.id}`)
+                      close()
+                    }}
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={member.avatar} />
+                      <AvatarFallback>
+                        {member.nickname.at(0) || <User className="h-5 w-5" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <p className="text-sm font-medium text-white">
+                        {member.nickname}
+                      </p>
+                      <p className="text-xs text-white/70">{member.email}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
-        </div>
+        )}
+
+        {project.files && project.files.length > 0 && (
+          <iframe
+            src={project.files[0]}
+            className="h-[600px] w-full rounded-3xl border border-black/10"
+            title="프로젝트 파일"
+          />
+        )}
       </div>
     </div>
   )

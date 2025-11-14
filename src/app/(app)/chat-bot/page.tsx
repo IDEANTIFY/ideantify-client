@@ -5,18 +5,21 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-import { Clock, SendHorizonal, X, Zap } from 'lucide-react'
+import { addHours, formatDistanceToNow } from 'date-fns'
+import { ko } from 'date-fns/locale'
+import { Clock, SendHorizonal, Zap } from 'lucide-react'
+import { overlay } from 'overlay-kit'
 
-import { ChatRoomResponse, IdeaReport, chatApi } from '@/api'
-import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ChatRoomResponse,
+  IdeaReportListResponse,
+  chatApi,
+  ideaReportApi,
+} from '@/api'
+import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/libs/utils'
+import SelectReportModal from '@/modals/chat/select-report.modal'
 
 type ChatRoomType = 'normal' | 'develop' | 'report'
 
@@ -30,25 +33,20 @@ export default function Page() {
 
   const [rooms, setRooms] = useState<ChatRoomResponse[]>([])
 
-  const [showReportModal, setShowReportModal] = useState(false)
-  const [ideaReports, setIdeaReports] = useState<IdeaReport[]>([])
+  const [ideaReports, setIdeaReports] = useState<IdeaReportListResponse[]>([])
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
 
+  // 초기에 채팅방 목록과 아이디어 리포트 목록을 한번 로드
   useEffect(() => {
     ;(async () => {
-      setRooms((await chatApi.getUserChatRooms()).chatRooms)
+      const [chatRoomsData, ideaReportsData] = await Promise.all([
+        chatApi.getUserChatRooms(),
+        ideaReportApi.getIdeaReportList(),
+      ])
+      setRooms(chatRoomsData.chat_rooms)
+      setIdeaReports(ideaReportsData)
     })()
   }, [])
-
-  const loadIdeaReports = async () => {
-    try {
-      const reports = await chatApi.getIdeaReports()
-      setIdeaReports(reports)
-    } catch (error) {
-      console.error('리포트 목록 불러오기 실패:', error)
-      alert('리포트 목록을 불러오는데 실패했습니다.')
-    }
-  }
 
   const getChatRoomType = (): ChatRoomType => {
     if (isIdeaDeveloping) return 'develop'
@@ -56,21 +54,31 @@ export default function Page() {
     return 'normal'
   }
 
-  const handleReportButtonClick = async () => {
-    setIsReportLoading((prev) => !prev)
+  const handleReportButtonClick = () => {
     setIsIdeaDeveloping(false)
 
     if (!isReportLoading) {
-      await loadIdeaReports()
-      setShowReportModal(true)
+      overlay.open(({ isOpen, close }) => (
+        <SelectReportModal
+          isOpen={isOpen}
+          close={() => {
+            // 모달이 닫힐 때 리포트가 선택되었는지 확인
+            if (selectedReportId) {
+              setIsReportLoading(true)
+            }
+            close()
+          }}
+          ideaReports={ideaReports}
+          selectedReportId={selectedReportId}
+          onSelectReport={(reportId) => {
+            setSelectedReportId(reportId)
+          }}
+        />
+      ))
     } else {
+      setIsReportLoading(false)
       setSelectedReportId(null)
     }
-  }
-
-  const handleSelectReport = (reportId: string) => {
-    setSelectedReportId(reportId)
-    setShowReportModal(false)
   }
 
   const handleSubmit = async () => {
@@ -79,8 +87,17 @@ export default function Page() {
     const chatRoomType = getChatRoomType()
 
     if (chatRoomType === 'report' && !selectedReportId) {
-      await loadIdeaReports()
-      setShowReportModal(true)
+      overlay.open(({ isOpen, close }) => (
+        <SelectReportModal
+          isOpen={isOpen}
+          close={close}
+          ideaReports={ideaReports}
+          selectedReportId={selectedReportId}
+          onSelectReport={(reportId) => {
+            setSelectedReportId(reportId)
+          }}
+        />
+      ))
       return
     }
 
@@ -108,7 +125,6 @@ export default function Page() {
       router.push(`/chat-bot/${response.id}`)
     } catch (error) {
       console.error('채팅방 생성 실패:', error)
-      alert('채팅방 생성에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setIsSubmitting(false)
     }
@@ -169,18 +185,13 @@ export default function Page() {
                 disabled={isSubmitting}
                 className={cn(
                   'border bg-white text-xs disabled:bg-neutral-500',
-                  isReportLoading
+                  selectedReportId
                     ? 'border-ideantify text-ideantify hover:bg-teal-50'
                     : 'border-neutral-500 text-neutral-500 hover:bg-neutral-50'
                 )}
                 onClick={handleReportButtonClick}
               >
                 <Zap /> 아이디어 검증 리포트 불러오기
-                {selectedReportId && (
-                  <span className="bg-ideantify ml-1 rounded-full px-1.5 text-white">
-                    ✓
-                  </span>
-                )}
               </Button>
             </div>
           </div>
@@ -189,8 +200,8 @@ export default function Page() {
         <section className="flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto bg-neutral-50 px-4 py-8">
           {rooms.map((room) => (
             <Link
-              key={room.chatRoomId}
-              href={`/chat-bot/${room.chatRoomId}`}
+              key={room.chat_room_id}
+              href={`/chat-bot/${room.chat_room_id}`}
               className="flex w-full max-w-2xl flex-col gap-2 rounded-xl border border-neutral-100 bg-white px-5 py-4 transition-colors hover:bg-neutral-50"
             >
               <div className="flex items-center justify-between gap-2">
@@ -200,7 +211,13 @@ export default function Page() {
                 <div className="flex shrink-0 items-center gap-1">
                   <Clock size={18} className="text-neutral-500" />
                   <p className="text-xs leading-4 whitespace-nowrap text-neutral-500">
-                    {new Date(room.createdAt).toLocaleDateString('ko-KR', {})}
+                    {formatDistanceToNow(
+                      addHours(new Date(room.created_at), 9),
+                      {
+                        addSuffix: true,
+                        locale: ko,
+                      }
+                    )}
                   </p>
                 </div>
               </div>
@@ -208,41 +225,6 @@ export default function Page() {
           ))}
         </section>
       </div>
-
-      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>아이디어 검증 리포트 선택</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-96 space-y-2 overflow-y-auto">
-            {ideaReports.length === 0 ? (
-              <p className="py-8 text-center text-neutral-500">
-                생성된 리포트가 없습니다.
-              </p>
-            ) : (
-              ideaReports.map((report) => (
-                <button
-                  key={report.id}
-                  onClick={() => handleSelectReport(report.id)}
-                  className="flex w-full flex-col gap-1 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-left transition-colors hover:bg-neutral-50"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="flex-1 font-medium text-neutral-700">
-                      {report.query}
-                    </p>
-                    {selectedReportId === report.id && (
-                      <span className="text-ideantify shrink-0">✓</span>
-                    )}
-                  </div>
-                  <p className="line-clamp-2 text-xs text-neutral-500">
-                    {report.analysisNarrative}
-                  </p>
-                </button>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

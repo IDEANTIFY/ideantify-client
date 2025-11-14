@@ -15,7 +15,7 @@ import { overlay } from 'overlay-kit'
 
 import SidebarItem from '@/components/shared/side-bar/item'
 import SidebarItemGroup from '@/components/shared/side-bar/item-group'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import LoginModal from '@/modals/auth/login.modal'
 import { useAuthStore, useUserStore } from '@/stores'
@@ -84,6 +84,7 @@ export default function Sidebar() {
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
               <Avatar>
+                <AvatarImage src={user.avatar} alt={user.nickname} />
                 <AvatarFallback>{user.nickname.at(0)}</AvatarFallback>
               </Avatar>
               <p className="text-base font-medium">{user.nickname}</p>

@@ -27,7 +27,7 @@ export default function Page() {
         </h2>
       </div>
 
-      <div className="flex max-w-sm flex-wrap gap-2">
+      <div className="flex max-w-xl flex-wrap gap-2">
         {keywords.map((keyword) => (
           <Button
             key={keyword.id}
@@ -57,7 +57,8 @@ export default function Page() {
       <Button
         className="bg-ideantify hover:bg-ideantify/90 w-fit self-end"
         size="lg"
-        onClick={() => {
+        onClick={async () => {
+          await keywordApi.selectKeywords({ keyword_ids: selectedKeywords })
           sessionStorage.setItem('onboarding', 'completed')
           window.location.href = '/idea-check'
         }}

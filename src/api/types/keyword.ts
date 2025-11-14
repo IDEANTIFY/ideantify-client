@@ -6,7 +6,7 @@ export const KeywordResponseSchema = z.object({
 })
 
 export const SelectKeywordsRequestSchema = z.object({
-  keywordIds: z.array(z.string().uuid()).min(1),
+  keyword_ids: z.array(z.string().uuid()).min(1),
 })
 
 export type KeywordResponse = z.infer<typeof KeywordResponseSchema>

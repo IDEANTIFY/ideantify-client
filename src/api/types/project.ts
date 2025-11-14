@@ -2,10 +2,10 @@ import { z } from 'zod'
 
 import { SimpleUserResponseSchema } from '@/api'
 
+// Request DTOs
 export const CreateProjectRequestSchema = z.object({
   image: z.string().min(1),
   subject: z.string().min(1),
-  keywords: z.array(z.string()).optional(),
   github: z.string().optional(),
   members: z.array(z.string().uuid()).optional(),
   files: z.array(z.string()).optional(),
@@ -15,20 +15,19 @@ export const CreateProjectRequestSchema = z.object({
 export const UpdateProjectRequestSchema = z.object({
   image: z.string().min(1),
   subject: z.string().min(1),
-  keywords: z.array(z.string()).optional(),
   github: z.string().optional(),
   members: z.array(z.string().uuid()).optional(),
   files: z.array(z.string()).optional(),
   description: z.string().optional(),
 })
 
+// Response DTOs
 export const ProjectResponseSchema = z.object({
   id: z.string().uuid(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
   image: z.string(),
   subject: z.string(),
-  keywords: z.array(z.string()).optional(),
   github: z.string().optional(),
   members: z.array(z.string().uuid()).optional(),
   files: z.array(z.string()).optional(),
@@ -43,8 +42,8 @@ export const CommentUserSchema = z.object({
 
 export const CommentResponseSchema = z.object({
   id: z.string().uuid(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
   user: SimpleUserResponseSchema,
   content: z.string(),
   deleted: z.boolean(),
@@ -52,25 +51,24 @@ export const CommentResponseSchema = z.object({
 
 export const CreatedCommentResponseSchema = z.object({
   id: z.string().uuid(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
   user: CommentUserSchema,
   content: z.string(),
 })
 
 export const ProjectDetailResponseSchema = z.object({
   id: z.string().uuid(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
   image: z.string(),
   subject: z.string(),
-  keywords: z.array(z.string()).optional(),
   github: z.string().optional(),
   members: z.array(z.string().uuid()).optional(),
   files: z.array(z.string()).optional(),
   description: z.string().optional(),
   comments: z.array(CommentResponseSchema),
-  ownerId: z.string().uuid(),
+  owner_id: z.string().uuid(),
 })
 
 export const ProjectListResponseSchema = z.object({
@@ -78,20 +76,20 @@ export const ProjectListResponseSchema = z.object({
   image: z.string(),
   subject: z.string(),
   description: z.string(),
-  keywords: z.array(z.string()).optional(),
   members: z.array(z.string().uuid()).optional(),
 })
 
 export const ProjectLikeResponseSchema = z.object({
   liked: z.boolean(),
-  likesCount: z.number(),
+  likes_count: z.number(),
 })
 
 export const ProjectBookmarkResponseSchema = z.object({
   bookmarked: z.boolean(),
-  bookmarkCount: z.number(),
+  bookmark_count: z.number(),
 })
 
+// Types
 export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchema>
 export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>

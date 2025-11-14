@@ -5,19 +5,22 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { Share } from 'lucide-react'
+import { Edit, Share } from 'lucide-react'
 import { overlay } from 'overlay-kit'
 import { toast } from 'sonner'
 
-import { ProjectListResponse, projectApi } from '@/api'
+import { ProjectListResponse, projectApi, userApi } from '@/api'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import ProjectDetailModal from '@/modals/project/project-detail.modal'
+import EditProfileModal from '@/modals/user/edit-profile.modal'
+import FollowersModal from '@/modals/user/followers.modal'
+import FollowingsModal from '@/modals/user/followings.modal'
 import { useUserStore } from '@/stores'
 
 export default function Page() {
-  const { user } = useUserStore()
+  const { user, setUser } = useUserStore()
 
   const [projects, setProjects] = useState<ProjectListResponse[]>([])
 
@@ -29,6 +32,25 @@ export default function Page() {
       setProjects(response)
     })()
   }, [])
+
+  const handleEditProfile = () => {
+    overlay.open(({ isOpen, close }) => (
+      <EditProfileModal
+        isOpen={isOpen}
+        close={close}
+        initialData={{
+          nickname: user.nickname,
+          avatar: user.avatar,
+          profile: user.portfolio,
+        }}
+        onSubmit={async (data) => {
+          const updatedUser = await userApi.updateMyProfile(data)
+          setUser(updatedUser)
+          toast.success('프로필이 업데이트되었습니다!')
+        }}
+      />
+    ))
+  }
 
   return (
     <section className="mx-auto flex min-h-dvh w-full max-w-4xl flex-col gap-10 px-12 py-20">
@@ -47,26 +69,42 @@ export default function Page() {
           </div>
           <div className="flex flex-col items-end gap-4">
             <div className="flex gap-4">
-              {/*<Edit*/}
-              {/*  size={18}*/}
-              {/*  className="cursor-pointer text-neutral-600 hover:text-neutral-600/90"*/}
-              {/*/>*/}
+              <Edit
+                size={18}
+                className="cursor-pointer text-neutral-600 hover:text-neutral-600/90"
+                onClick={handleEditProfile}
+              />
               <Share
                 size={18}
                 className="cursor-pointer text-neutral-600 hover:text-neutral-600/90"
                 onClick={() => {
-                  navigator.clipboard.writeText(window.location.href)
+                  const profileUrl = `${window.location.origin}/users/${user.id}`
+                  navigator.clipboard.writeText(profileUrl).then(() => {})
                   toast.success('프로필 URL이 복사되었습니다!')
                 }}
               />
             </div>
 
             <div className="flex gap-4">
-              <span className="text-neutral-600">
+              <span
+                className="cursor-pointer text-neutral-600 transition-colors hover:text-neutral-800"
+                onClick={() => {
+                  overlay.open(({ isOpen, close }) => (
+                    <FollowersModal isOpen={isOpen} close={close} />
+                  ))
+                }}
+              >
                 팔로워 <span className="font-bold">{user.followers}</span>
               </span>
 
-              <span className="text-neutral-600">
+              <span
+                className="cursor-pointer text-neutral-600 transition-colors hover:text-neutral-800"
+                onClick={() => {
+                  overlay.open(({ isOpen, close }) => (
+                    <FollowingsModal isOpen={isOpen} close={close} />
+                  ))
+                }}
+              >
                 팔로잉 <span className="font-bold">{user.following}</span>
               </span>
             </div>
@@ -76,17 +114,17 @@ export default function Page() {
         <Separator />
 
         <div className="ml-32 flex gap-16">
-          <div className="flex cursor-pointer flex-col items-center text-neutral-800 hover:text-neutral-800/90">
+          <div className="flex flex-col items-center text-neutral-800">
             <span className="text-3xl font-bold">{user.projects}</span>
             <span className="text-sm">프로젝트</span>
           </div>
 
-          <div className="flex cursor-pointer flex-col items-center text-neutral-800 hover:text-neutral-800/90">
+          <div className="flex flex-col items-center text-neutral-800">
             <span className="text-3xl font-bold">0</span>
             <span className="text-sm">좋아요</span>
           </div>
 
-          <div className="flex cursor-pointer flex-col items-center text-neutral-800 hover:text-neutral-800/90">
+          <div className="flex flex-col items-center text-neutral-800">
             <span className="text-3xl font-bold">0</span>
             <span className="text-sm">댓글</span>
           </div>
@@ -135,16 +173,6 @@ export default function Page() {
                   <p className="line-clamp-2 text-xs leading-5 text-zinc-500">
                     {project.description}
                   </p>
-                  <div className="flex gap-1.5">
-                    {project.keywords?.map((keyword) => (
-                      <span
-                        key={keyword}
-                        className="w-fit rounded-full border-[0.5px] border-[#cdcdcd] bg-gray-50 px-2 py-0.5 text-xs text-neutral-700"
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               </div>
             ))

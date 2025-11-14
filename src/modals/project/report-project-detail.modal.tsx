@@ -31,13 +31,13 @@ export default function ReportProjectDetailModal({
           </div>
 
           <span className="h-fit rounded-full bg-teal-100 px-4 py-1.5 text-sm font-medium text-teal-500">
-            {result.score}%
+            {(Number(result.score) * 100).toFixed(2)}%
           </span>
         </DialogHeader>
 
         <div className="flex items-center gap-4">
           <Image
-            src={result.thumbnail || 'https://placehold.co/240x240'}
+            src={result.thumbnail || '/placeholder.png'}
             alt={result.title}
             width={240}
             height={240}
@@ -47,8 +47,29 @@ export default function ReportProjectDetailModal({
           <span className="text-sm whitespace-pre-wrap">{result.summary}</span>
         </div>
 
-        <span className="rounded-xl bg-neutral-100 p-6 text-sm whitespace-pre-wrap">
-          {result.insight}
+        <span className="flex flex-col rounded-xl bg-neutral-100 p-6 text-sm whitespace-pre-wrap">
+          <span className="font-semibold">기존 아이디어</span>
+          {result.insight
+            .split('<기존 아이디어>')[1]
+            .split('<내 아이디어>')[0]
+            .split('\n')
+            .map((line, index) => (
+              <span key={index} className="pl-2">
+                {line}
+                <br />
+              </span>
+            ))}
+          <br />
+          <span className="font-semibold">내 아이디어</span>
+          {result.insight
+            .split('<내 아이디어>')[1]
+            .split('\n')
+            .map((line, index) => (
+              <span key={index} className="pl-2">
+                {line}
+                <br />
+              </span>
+            ))}
         </span>
       </DialogContent>
     </Dialog>

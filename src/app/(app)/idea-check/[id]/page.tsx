@@ -44,8 +44,8 @@ export default function Page({ params }: Props) {
         similarity={report.similarity}
         creativity={report.creativity}
         feasibility={report.feasibility}
-        analysisNarrative={report.analysisNarrative}
-        detailedResults={report.detailedResults}
+        analysisNarrative={report.analysis_narrative}
+        detailedResults={report.detailed_results}
       />
     </div>
   )

@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Upload, X } from 'lucide-react'
+import { Plus, Upload, User as UserIcon, X } from 'lucide-react'
+import { overlay } from 'overlay-kit'
 
+import { SimpleUserResponse } from '@/api'
 import {
   CreateProjectRequest,
   CreateProjectRequestSchema,
@@ -20,17 +23,29 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import AddMemberModal from '@/modals/project/add-member.modal'
 import { useUserStore } from '@/stores'
 
 export default function Page() {
   const { user } = useUserStore()
+  const [selectedMembers, setSelectedMembers] = useState<SimpleUserResponse[]>(
+    user
+      ? [
+          {
+            id: user.id,
+            email: user.email,
+            nickname: user.nickname,
+            avatar: user.avatar,
+          },
+        ]
+      : []
+  )
 
   const form = useForm({
     resolver: zodResolver(CreateProjectRequestSchema),
     defaultValues: {
       image: '',
       subject: '',
-      keywords: [],
       github: '',
       members: [user?.id],
       files: [],
@@ -38,7 +53,6 @@ export default function Page() {
     },
   })
 
-  const keywords = form.watch('keywords') || []
   const members = form.watch('members') || []
 
   const handleImageUpload = (file: File) => {
@@ -89,10 +103,6 @@ export default function Page() {
     e.preventDefault()
     const file = e.dataTransfer.files[0]
     if (file) handleProjectFileUpload(file)
-  }
-
-  const addKeyword = () => {
-    form.setValue('keywords', [...keywords, ''])
   }
 
   const onSubmit = (data: CreateProjectRequest) => {
@@ -152,57 +162,6 @@ export default function Page() {
             <div className="flex flex-col gap-4 rounded-2xl border border-neutral-100 bg-white p-8">
               <FormField
                 control={form.control}
-                name="keywords"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>키워드</FormLabel>
-                    <FormControl>
-                      <div className="flex flex-wrap gap-2">
-                        {keywords.map((keyword, index) => (
-                          <div
-                            key={index}
-                            className="flex w-fit items-center gap-2 rounded-xl border border-neutral-100 bg-white px-4 py-2"
-                          >
-                            <Input
-                              value={keyword}
-                              onChange={(e) => {
-                                const updated = [...keywords]
-                                updated[index] = e.target.value
-                                form.setValue('keywords', updated)
-                              }}
-                              className="h-auto w-auto min-w-[60px] border-0 p-0 text-sm text-neutral-500 shadow-none focus-visible:ring-0"
-                            />
-                            <X
-                              size={14}
-                              className="cursor-pointer text-neutral-400 hover:text-neutral-600"
-                              onClick={() =>
-                                form.setValue(
-                                  'keywords',
-                                  keywords.filter((_, i) => i !== index)
-                                )
-                              }
-                            />
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={addKeyword}
-                          className="flex cursor-pointer items-center gap-1 rounded-xl border border-teal-500 bg-teal-50 px-4 py-2"
-                        >
-                          <Plus size={16} className="text-teal-500" />
-                          <p className="text-sm text-teal-500">추가</p>
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="flex flex-col gap-4 rounded-2xl border border-neutral-100 bg-white p-8">
-              <FormField
-                control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
@@ -220,30 +179,96 @@ export default function Page() {
               />
             </div>
 
+            <div className="flex flex-col gap-4 rounded-2xl border border-neutral-100 bg-white p-8">
+              <FormField
+                control={form.control}
+                name="github"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Github 레포지토리</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://github.com/username/repository"
+                        {...field}
+                        className="rounded-xl border-neutral-100 bg-white px-4 py-3"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <div className="flex flex-col gap-5 rounded-2xl border border-neutral-100 bg-white px-8 py-8 pb-7">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-neutral-700">멤버</p>
-                {/*<button*/}
-                {/*  type="button"*/}
-                {/*  onClick={() => {*/}
-                {/*    const currentMembers = form.getValues('members') || []*/}
-                {/*    form.setValue('members', [...currentMembers, ''])*/}
-                {/*  }}*/}
-                {/*  className="flex items-center gap-1 rounded-xl border border-teal-500 bg-teal-50 px-4 py-2"*/}
-                {/*>*/}
-                {/*  <Plus size={16} className="text-teal-500" />*/}
-                {/*  <p className="text-sm text-teal-500">추가</p>*/}
-                {/*</button>*/}
+                <button
+                  type="button"
+                  onClick={() => {
+                    overlay.open(({ isOpen, close }) => (
+                      <AddMemberModal
+                        isOpen={isOpen}
+                        close={close}
+                        onAddMember={(user) => {
+                          if (!selectedMembers.find((m) => m.id === user.id)) {
+                            setSelectedMembers([...selectedMembers, user])
+                            const currentMembers =
+                              form.getValues('members') || []
+                            form.setValue('members', [
+                              ...currentMembers,
+                              user.id,
+                            ])
+                          }
+                        }}
+                      />
+                    ))
+                  }}
+                  className="flex cursor-pointer items-center gap-1 rounded-xl border border-teal-500 bg-teal-50 px-4 py-2"
+                >
+                  <Plus size={16} className="text-teal-500" />
+                  <p className="text-sm text-teal-500">추가</p>
+                </button>
               </div>
               <div className="flex flex-col gap-4">
-                {members.map((member, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100">
+                {selectedMembers.map((member, index) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100">
+                        {member.avatar ? (
+                          <img
+                            src={member.avatar}
+                            alt={member.nickname}
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <UserIcon className="h-4 w-4 text-neutral-600" />
+                        )}
+                      </div>
                       <p className="text-sm text-neutral-700">
-                        {user?.nickname.at(0)}
+                        {member.nickname}
                       </p>
                     </div>
-                    <p className="text-sm text-neutral-700">{user?.nickname}</p>
+                    {member.id !== user?.id && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMembers(
+                            selectedMembers.filter((m) => m.id !== member.id)
+                          )
+                          const currentMembers = form.getValues('members') || []
+                          form.setValue(
+                            'members',
+                            currentMembers.filter((id) => id !== member.id)
+                          )
+                        }}
+                        className="text-neutral-400 hover:text-neutral-600"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -354,26 +379,6 @@ export default function Page() {
                   </>
                 )}
               </label>
-            </div>
-
-            <div className="flex flex-col gap-4 rounded-2xl border border-neutral-100 bg-white p-8">
-              <FormField
-                control={form.control}
-                name="github"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Github 레포지토리</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://github.com/username/repository"
-                        {...field}
-                        className="rounded-xl border-neutral-100 bg-white px-4 py-3"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
           </div>
         </form>
