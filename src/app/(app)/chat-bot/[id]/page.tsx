@@ -128,13 +128,6 @@ export default function Page({ params }: Props) {
       const client = new Client({
         brokerURL: `${wsUrl}/ws/chat`,
         reconnectDelay: 1000,
-        debug:
-          process.env.NODE_ENV === 'development'
-            ? (str) => console.log(str)
-            : undefined,
-        onWebSocketError: (error) => {
-          console.error('WebSocket 연결 오류:', error)
-        },
       })
 
       // 연결 성공 시 토픽 구독

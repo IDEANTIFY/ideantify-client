@@ -98,13 +98,6 @@ ex) 팀플 일정 맞춰주는 앱`}
                     const client = new Client({
                       brokerURL: `${wsUrl}/ws/chat`,
                       reconnectDelay: 0,
-                      debug:
-                        process.env.NODE_ENV === 'development'
-                          ? (str) => console.log(str)
-                          : undefined,
-                      onWebSocketError: (error) => {
-                        console.error('WebSocket 연결 오류:', error)
-                      },
                     })
 
                     client.onConnect = () => {
@@ -258,13 +251,6 @@ ex) 팀플 일정 맞춰주는 앱`}
                     const client = new Client({
                       brokerURL: `${wsUrl}/ws/chat`,
                       reconnectDelay: 0,
-                      debug:
-                        process.env.NODE_ENV === 'development'
-                          ? (str) => console.log(str)
-                          : undefined,
-                      onWebSocketError: (error) => {
-                        console.error('WebSocket 연결 오류:', error)
-                      },
                     })
 
                     client.onConnect = () => {
